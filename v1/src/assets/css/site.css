@@ -881,6 +881,20 @@ main:focus {
     display: none;
   }
 
+  /* A grid that does not fit the rest of the page moves to the next page
+     whole; as a plain list the principles can break between items. */
+  .principles {
+    display: block;
+  }
+
+  .principles div {
+    break-inside: avoid;
+  }
+
+  .principles div + div {
+    margin-top: 2.5rem;
+  }
+
   /* The page is too narrow for two columns anyway; a multi-column list split
      across a page break pushes the rest of its row onto the next page. */
   .area__body .ticks {
