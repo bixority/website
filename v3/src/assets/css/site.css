@@ -1,0 +1,541 @@
+/* bixority.com v3 "Keynote": the design system. One stylesheet, bundled by build.py.
+
+   BUNDLING. build.py joins assets/fonts/fonts.css, this file and every other src/assets/css/*.css in sorted
+   name order into one fingerprinted stylesheet. A page that needs its own rules adds
+   src/assets/css/page-<name>.css (for example page-services.css); no other wiring is needed.
+   Page files may only use the tokens below and the existing type sizes. No new font sizes, no colours of their own.
+
+   THEMES. Dark, the navy stage, is the default and sits on bare :root. Light, the "aluminium room", is the same
+   role tokens under @media (prefers-color-scheme: light). Both follow the system; there is no toggle.
+   Use roles, never colour values: --ground, --ink, --quiet (second voice), --accent (hover, focus), --line
+   (resting link underline). Lime lives only in the logo and the mark; cyan only as the UI accent.
+
+   TYPE. Geist 400 and 600 for text. The weights 250, 500 and 800 are for the words Design, Build and Run only.
+   Geist Mono is for repository names only. The sizes are tokens: --t-small, --t-base, --t-lead, --t-ask,
+   --t-say, plus the home H1, which is a size of its own (six in all, and no more). Where a word must fit its
+   column, a container-query cap (.col h3, .proof h2, .ft__ask, .names and the Latvian H1) takes the size down a
+   little from its token; those fitted sizes are inherited from the approved prototype.
+
+   INNER-PAGE COMPONENTS (every page is inside the shared header, <main id="content"> and footer from layout.html).
+   Each section sits in <div|section class="... wrap">, which gives the left grid. Sections are separated by
+   space, never by rules, cards or boxes. The first element on a page is .page-head.
+
+   .page-head  the page's one H1 (at --t-say) and a lead line (--t-lead, quiet).
+       <section class="page-head wrap" aria-labelledby="page-title">
+         <h1 id="page-title">Services</h1>
+         <p class="lead">One sentence of 34 characters or more per line is fine; it wraps at 34ch.</p>
+       </section>
+
+   .beat  one section, one idea, on the home's grid. From 48rem it is three columns on exactly the tracks and gap of the
+          home .cols and .proof (so columns 2 and 3 start where Build and Run start); below that everything stacks.
+          Column 1 holds the H2 (--t-ask) and an optional intro, the first paragraph after the H2, marked class="intro"
+          (--t-lead, quiet, like .proof__text). Columns 2 and 3 hold the content, which must be ONE element after the
+          intro: .parts, .prose, .list, .facts or .repos (it is placed on columns 2-3 explicitly, never by auto-placement).
+          Give the section an id when it is a link target (services/#devops).
+       <section class="beat wrap" id="devops" aria-labelledby="devops-title">
+         <h2 id="devops-title">DevOps and SRE</h2>
+         <p class="intro">Body text for column 1.</p>
+         <div class="parts"> ...parts, below... </div>
+       </section>
+       <section class="beat wrap" id="about" aria-labelledby="about-title">   (no intro: all text in columns 2-3)
+         <h2 id="about-title">About us</h2>
+         <div class="prose"><p>First paragraph.</p><p>Second paragraph.</p></div>
+       </section>
+
+   .parts and .part  the subsections of a beat. .parts spans columns 2-3 and is two columns on the same tracks from 64rem
+          (one column below), with a generous row gap and no rules or boxes. A .part is an h3 (--t-lead, ink, bold), its
+          paragraphs and an optional .list.
+       <div class="parts">
+         <div class="part">
+           <h3>Kubernetes</h3>
+           <p>More text.</p>
+           <ul class="list"><li>First</li><li>Second</li></ul>
+         </div>
+         <div class="part"> ... </div>
+       </div>
+
+   TYPE ON INNER PAGES. Running text (.intro, .part p, .list li, .facts dd, repository descriptions, .prose) is --t-lead in
+   the quiet colour, as in the home .col p; links are in ink. h3 and repository names are --t-lead in ink. --t-small is for
+   meta only: the licence and links line, .facts dt and the "last updated" line.
+
+   .list  plain list for features inside a part or a repository: a quiet dash marker, no bullets, no boxes. Use on <ul>.
+       <ul class="list"><li>On-premises clusters</li><li>Helm charts and packaging</li></ul>
+
+   .facts  company facts as a definition list: term quiet and small, value --t-lead. Spans columns 2-3, two columns from
+           64rem, stacked below. Wrap each pair in a div. Put it inside a .beat.
+       <dl class="facts">
+         <div><dt>Registration No.</dt><dd>40103335376</dd></div>
+         <div><dt>VAT No.</dt><dd>LV40103335376</dd></div>
+       </dl>
+
+   .repos  repositories: spans columns 2-3, two columns from 64rem. The name in Geist Mono as a link (the h3, --t-lead, capped
+           to its column from 64rem as .names is, so 26 characters fit), a description, an optional .list, then a meta line
+           (licence first, then links) with a gap, no separators. Put it inside a .beat.
+       <ul class="repos">
+         <li>
+           <h3><a href="https://github.com/bixority/pg-migrate">pg-migrate</a></h3>
+           <p>One line on what it does.</p>
+           <p class="meta"><span>AGPL-3.0</span> <a href="https://github.com/bixority/pg-migrate">GitHub</a>
+              <a href="https://codeberg.org/bixority/pg-migrate">Codeberg</a> <a href="/open-source/">Product page</a></p>
+         </li>
+       </ul>
+
+   .prose  long-form text in columns 2-3 at a 62ch measure (--t-lead, quiet, underlined ink links, bulleted lists).
+   .beat--legal  the privacy notice, a legal margin: one <section class="beat beat--legal wrap" aria-labelledby="id"> per
+           clause, its h2 (--t-lead, bold) in column 1 and a .prose in columns 2-3. The "last updated" line goes first, in a
+           <div class="beat beat--legal beat--note wrap"><p class="note">...</p></div>.
+       <section class="beat beat--legal wrap" aria-labelledby="who">
+         <h2 id="who">Who we are</h2>
+         <div class="prose"><p>Text with <a href="mailto:info@bixority.com">a link</a>.</p><ul><li>A bulleted item</li></ul></div>
+       </section>
+
+   .beat--plain  a beat that stays one block (the 404 page: two rows of links).
+
+   .links  a row of plain links (404). Utility classes: .nw keeps a compound whole (<span class="nw">CI/CD</span>),
+           .mute is the quiet colour, .vh hides text visually but keeps it for screen readers.
+
+   .apart  on a wrapper around {{ partial_mark }}: the mark, still, in the split grey state of the home animation
+           (the 404 page). Without it the mark is closed and in full colour.
+       <div class="page-head__fig apart" aria-hidden="true">{{ partial_mark }}</div>
+   .page-head--mark  a .page-head with the figure beside the text (404 only): put .page-head__text and
+           .page-head__fig inside it.
+
+   .page-head--obj  the object on the stage (Services, Open source, Company): the mark, still, closed and lit as the home
+           ends, in column 3 of the page head, where the home's Run sits; the H1 and lead keep columns 1-2. The same object
+           on every page that has it, never a page-specific variant. From 48rem only: on phones the header logo is close
+           by, and print leaves it out. Always wrap the figure in .still, which switches the home reveal off for it.
+           The privacy notice keeps the plain .page-head.
+       <section class="page-head page-head--obj wrap" aria-labelledby="page-title">
+         <div class="page-head__text"><h1 id="page-title">Services</h1><p class="lead">...</p></div>
+         <div class="page-head__obj still" aria-hidden="true">{{ partial_mark }}</div>
+       </section>
+
+   .beat--say  promotes the beat's .intro, an existing sentence, to a statement at --t-ask over columns 2-3, with the content
+           below it. One per page at most, and only where the page is long enough to need a pause (Services, Company).
+           Below 48rem it stays at the lead size, in ink, so it does not read as a second heading.
+       <section class="beat beat--say wrap" id="development" aria-labelledby="development-title">
+         <h2 id="development-title">Software development</h2>
+         <p class="intro">From the first design document to maintenance years later, by the same team.</p>
+         <div class="parts"> ... </div>
+       </section>
+*/
+
+/* ===== role tokens. Default: the stage (brand navy). ===== */
+:root {
+  color-scheme: dark;
+  --ground: #001b35;  /* page, header, footer */
+  --ink:    #eef2f6;  /* headings, text, links      15.45 : 1 */
+  --quiet:  #8aa0b6;  /* the second voice           6.44 : 1 */
+  --accent: #00ccff;  /* hover underline, focus ring 9.17 : 1 */
+  --line:   #0097c2;  /* resting link underline      5.14 : 1 */
+  /* the mark as an object on this ground */
+  --shade: #000913; --shade-o: .6;  /* its soft shadow */
+  --off: .55;                       /* brightness of the unlit (grey) chevrons */
+  /* which logo file the ground takes */
+  --logo-dark: block; --logo-light: none;
+
+  /* type scale */
+  --t-small: .875rem;
+  --t-base: 1rem;
+  --t-lead: clamp(1.125rem, 1rem + .45vw, 1.375rem);
+  --t-say: clamp(2.125rem, 1.1rem + 3.1vw, 4rem);
+  --t-ask: clamp(2rem, 1.2rem + 1.4vw, 2.5rem);
+
+  --gutter: clamp(1rem, 4vw, 4rem);
+  --hd: 5.75rem;     /* the 64 px logo with .875rem above and below: room for the focus ring */
+  --mark-h: 66svh;   /* the mark, and the height of the problem and principle beats */
+  --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
+}
+/* the light variant, "the aluminium room": the system's choice, no toggle */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --ground: #e3e6e9; --ink: #001b35; --quiet: #4a5664; --accent: #006b85; --line: #006b85;
+    --shade: #0b2a48; --shade-o: .34; --off: .78;
+    --logo-dark: none; --logo-light: block;
+  }
+}
+@media (prefers-contrast: more) {
+  :root:root:root { --quiet: var(--ink); } /* outranks both themes */
+  a { text-decoration-thickness: 2px; }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--ground); }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 var(--t-base)/1.5 var(--sans);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+h1, h2, h3, p, ul, ol, dl, dd { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+h1, h2, h3 { text-wrap: balance; }
+img, svg { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--line);
+    text-decoration-thickness: 1px; text-underline-offset: .22em; }
+a:hover { text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+main:focus { outline: none; }
+
+code { font: inherit; } /* command names stay in the text face; Geist Mono is for repository names only */
+.nw { white-space: nowrap; } /* keeps a compound or the city line whole */
+.vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: absolute; left: var(--gutter); top: .75rem; z-index: 10; padding: .5rem .75rem;
+        background: var(--ink); color: var(--ground); transform: translateY(-200%); }
+.skip:focus { transform: none; }
+
+.wrap { width: min(100% - 2 * var(--gutter), 82rem); margin-inline: auto; }
+
+/* the shared voices */
+.say  { font-size: var(--t-say); font-weight: 600; line-height: 1.06; letter-spacing: -.03em; text-wrap: balance; }
+.lead { font-size: var(--t-lead); line-height: 1.45; color: var(--quiet); max-width: 34ch; text-wrap: pretty; }
+.mute { color: var(--quiet); }
+
+/* the full logo with its tagline, in the logo's own proportion (1309 : 486); the file follows the theme */
+.logo { display: block; border-radius: 2px; }
+.logo img { width: 172px; height: auto; }
+.logo__dark  { display: var(--logo-dark); }
+.logo__light { display: var(--logo-light); }
+
+/* header: logo, three links, one language link; not fixed */
+.hd { min-height: var(--hd); display: flex; align-items: center; gap: .25rem 2rem; flex-wrap: wrap; padding-block: .875rem; }
+.hd .logo { margin-right: auto; }
+.hd__nav ul { display: flex; gap: .25rem 1.75rem; flex-wrap: wrap; }
+.hd a:not(.logo) { text-decoration: none; }
+/* the current page: a 2 px accent underline (9.2 : 1 on the navy, 4.9 : 1 on the aluminium) */
+.hd .hd__nav a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: .22em; }
+.hd a:not(.logo):hover { text-decoration: underline; text-decoration-color: var(--accent); }
+
+/* ===== the stage: cover, problem, principle, with the mark beside them ===== */
+.stage { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: var(--gutter); --split: 46px; }
+.stage__fig { grid-column: 2; grid-row: 1; display: grid; place-items: center; }
+.mark { height: var(--mark-h); width: auto; max-width: 100%; overflow: visible; }
+.scene { grid-column: 1; container-type: inline-size; }
+.scene--cover { grid-row: 1; min-height: calc(100svh - var(--hd)); display: flex; flex-direction: column; justify-content: center; gap: clamp(1.75rem, 4.5vh, 2.75rem); padding-block: 2rem; }
+.scene--problem, .scene--principle { grid-row: 2; padding-block: clamp(2rem, 8vh, 5rem); }
+.scene--principle { grid-column: 2; display: flex; flex-direction: column; gap: 1.75rem; }
+.scene--problem .mute { display: block; } /* the setup, then the consequence on its own line */
+.scene--cover h1 { font-size: min(9.5rem, 20cqi); font-weight: 600; line-height: .98; letter-spacing: -.045em; }
+.scene--cover h1 span { display: block; }
+.scene--cover .lead { text-wrap: balance; } /* no two-word last line under two long ones */
+/* Latvian: each sentence of the H1 keeps to one line ("Mēs to izstrādājam." is 8.54 em), so the cover column
+   takes two thirds; that keeps the H1 at least 1.3 times the statement size at every width */
+:lang(lv) .stage { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+:lang(lv) .scene--cover h1 { font-size: min(6.5rem, 11.25cqi); }
+:lang(lv) .scene--cover h1 span { white-space: nowrap; }
+
+/* the mark as an object: brand gradients, a thin side face, a rim light, a soft shadow; light from above */
+.mark .side-a { fill: var(--sa); }
+.mark .side-b { fill: var(--sb); }
+.part--l { --sa: #7a9a00; --sb: #5b7300; --rim: #f4ffb0; }
+.part--c { --sa: #0089ad; --sb: #006a87; --rim: #b3f0ff; }
+.mark .rim { fill: none; stroke: var(--rim); stroke-width: 2.4; opacity: .85; }
+.mark .shade { fill: var(--shade); opacity: var(--shade-o); }
+
+/* the one reveal: only with motion allowed and scroll timelines available.
+   Without them the mark stays as the base style says: closed, at the logo's exact offset, in full colour. */
+@keyframes apart-c {
+  0%, 16% { transform: translate(0, 0); animation-timing-function: cubic-bezier(.45, 0, .25, 1); }
+  44%, 56% { transform: translate(var(--split), calc(-1 * var(--split))); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  84%, 100% { transform: translate(0, 0); }
+}
+@keyframes apart-l {
+  0%, 16% { transform: translate(0, 0); animation-timing-function: cubic-bezier(.45, 0, .25, 1); }
+  44%, 56% { transform: translate(calc(-1 * var(--split)), var(--split)); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  84%, 100% { transform: translate(0, 0); }
+}
+/* the colour goes out while the parts move apart and comes back once they have closed: two short, steep ramps,
+   so the half-lit colours pass quickly */
+@keyframes dim {
+  0%, 20% { filter: saturate(1) brightness(1); animation-timing-function: cubic-bezier(.65, 0, .35, 1); }
+  32%, 72% { filter: saturate(0) brightness(var(--off)); animation-timing-function: cubic-bezier(.65, 0, .35, 1); }
+  82%, 100% { filter: saturate(1) brightness(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) and (timeline-scope: --a) {
+    .part--c { animation: apart-c linear both; }
+    .part--l { animation: apart-l linear both; }
+    .mark .body { animation: dim linear both; }
+  }
+}
+/* landscape screens from 48rem: the mark is pinned beside the three beats and lets go as the principle centres */
+@media (prefers-reduced-motion: no-preference) and (min-width: 48rem) and (orientation: landscape) {
+  @supports (animation-timeline: view()) and (timeline-scope: --a) {
+    .stage { timeline-scope: --problem; }
+    .stage__fig { grid-row: 1 / span 3; align-self: start; position: sticky; top: calc(50svh - var(--mark-h) / 2); height: var(--mark-h); }
+    .scene--problem, .scene--principle { grid-column: 1; grid-row: auto; min-height: var(--mark-h); padding-block: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+    .scene--problem { view-timeline: --problem block; }
+    .part, .mark .body { animation-timeline: --problem; animation-range: cover 0% cover 100%; }
+  }
+}
+
+/* ===== what we do ===== */
+.work { padding-block: 1.5rem clamp(3.5rem, 9vh, 5.5rem); }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem var(--gutter); }
+.col { container-type: inline-size; }
+/* the sequence by weight: light, regular, heavy */
+.col h3 { font-size: min(var(--t-say), 15cqi); line-height: 1.06; letter-spacing: -.03em; margin-bottom: 1.5rem; }
+.col:nth-child(1) h3 { font-weight: 250; }
+.col:nth-child(2) h3 { font-weight: 500; }
+.col:nth-child(3) h3 { font-weight: 800; }
+.col p { font-size: var(--t-lead); line-height: 1.45; color: var(--quiet); max-width: 32ch; text-wrap: pretty; }
+.col p a { color: var(--ink); }
+
+/* ===== proof: the same three columns; the names take the second and third ===== */
+.proof { padding-block: 0 clamp(3.5rem, 9vh, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--gutter); align-items: start; container-type: inline-size; }
+.proof .lead { margin-top: 1.5rem; }
+.proof__text { grid-column: 1; container-type: inline-size; }
+.proof h2 { font-size: min(var(--t-say), 15cqi); }
+.names { grid-column: 2 / span 2; columns: 2; column-gap: var(--gutter);
+         font: 400 min(var(--t-lead), calc((100cqi - 2 * var(--gutter)) / 3 / 16))/1.45 var(--mono); letter-spacing: -.01em; }
+.names li { break-inside: avoid; padding-block: .1em; }
+
+/* ===== footer: the ask, then the company ===== */
+.ft { padding-block: 0 1.5rem; container-type: inline-size; }
+.ft__ask { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .3em; font-size: min(var(--t-ask), 9.5cqi); font-weight: 600; letter-spacing: -.025em; line-height: 1.1; margin-bottom: 1.5rem; }
+.ft__ask h2, .ft__ask p { font-size: inherit; font-weight: inherit; }
+.ft__ask a { text-decoration-thickness: 2px; text-underline-offset: .14em; }
+.ft__co { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .75rem var(--gutter); align-items: center;
+          font-size: var(--t-small); line-height: 1.6; color: var(--quiet); }
+address { font-style: normal; }
+.ft__links { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
+.ft__links a { color: var(--ink); }
+
+/* ===== inner pages: the home's three columns, the same voices ===== */
+.page-head { padding-block: clamp(2.5rem, 9vh, 5.5rem) clamp(1rem, 3vh, 2rem); }
+.page-head h1 { font-size: var(--t-say); font-weight: 600; line-height: 1.06; letter-spacing: -.03em; }
+.page-head .lead { margin-top: 1.5rem; }
+.page-head--mark { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); column-gap: var(--gutter); align-items: center; }
+.page-head__fig { display: grid; place-items: center; }
+
+/* a beat stacks on phones: the H2, the intro, then the content. From 48rem it is the home's grid, on the same
+   three tracks as .cols and .proof: the H2 and the intro in the first, the content in the second and third. */
+.beat { padding-block: clamp(2.25rem, 7vh, 4.5rem); container-type: inline-size; }
+.beat[id], .beat--legal > h2[id] { scroll-margin-top: 1rem; }
+.beat > h2 { font-size: var(--t-ask); font-weight: 600; line-height: 1.1; letter-spacing: -.025em; max-width: 26ch; }
+.beat > .intro { margin-top: 1.5rem; }
+.beat > :is(.parts, .prose, .list, .facts, .repos) { margin-top: 2rem; }
+
+/* running text: the lead size in the quiet voice, as in the home columns; links in ink */
+.intro, .part p, .list li, .facts dd, .repos p, .prose { font-size: var(--t-lead); line-height: 1.45; color: var(--quiet); text-wrap: pretty; }
+.intro a, .part p a, .facts dd a, .repos p a, .prose a { color: var(--ink); }
+
+.parts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3rem var(--gutter); }
+.part h3 { font-size: var(--t-lead); font-weight: 600; line-height: 1.3; margin-bottom: .5rem; }
+.part .list { margin-top: .75rem; }
+
+.list li { position: relative; padding-left: 1.25em; }
+.list li + li { margin-top: .35em; }
+.list li::before { content: "\2013"; position: absolute; left: 0; color: var(--quiet); }
+
+.facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem var(--gutter); }
+.facts dt { font-size: var(--t-small); line-height: 1.5; color: var(--quiet); }
+.facts dd { overflow-wrap: anywhere; }
+
+.repos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3rem var(--gutter); }
+.repos h3 { font: 400 var(--t-lead)/1.3 var(--mono); letter-spacing: -.01em; overflow-wrap: anywhere; }
+.repos h3 a { color: var(--ink); }
+.repos p { margin: .5rem 0 0; }
+.repos .meta { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin-top: .75rem; font-size: var(--t-small); color: var(--quiet); }
+.repos .meta a { color: var(--ink); }
+
+.prose { max-width: 62ch; }
+.prose > * + * { margin-top: 1rem; }
+.prose ul { padding-left: 1.25rem; list-style: disc; }
+.prose li + li { margin-top: .35rem; }
+.prose ::marker { color: var(--quiet); }
+
+/* the privacy notice: a legal margin, one row per section, the H2 at the lead size */
+.beat--legal { padding-block: clamp(1.25rem, 4vh, 2.25rem); }
+.beat.beat--legal > h2 { font-size: var(--t-lead); line-height: 1.45; letter-spacing: 0; max-width: none; }
+.beat--legal > .prose { margin-top: .75rem; }
+.beat--legal:last-child { padding-bottom: clamp(2.25rem, 7vh, 4.5rem); }
+.beat--note { padding-bottom: 0; }
+.note { font-size: var(--t-small); line-height: 1.5; color: var(--quiet); }
+
+.links { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; }
+.beat > nav + nav { margin-top: .75rem; }
+
+@media (min-width: 48rem) {
+  .beat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto 1fr; column-gap: var(--gutter); align-items: start; }
+  /* the longest H2 word (14 letters) fits the first column down to 48rem, as the home words fit theirs */
+  .beat > h2 { font-size: min(var(--t-ask), calc((100cqi - 2 * var(--gutter)) / 24)); grid-column: 1; }
+  .beat > .intro { grid-column: 1; }
+  .beat > :is(.parts, .prose, .list, .facts, .repos, .note) { grid-column: 2 / span 2; grid-row: 1 / span 2; margin-top: 0; }
+}
+@media (min-width: 64rem) {
+  .parts, .facts, .repos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* the name fits its column, as .names does on the home (26 characters in a third of the row) */
+  .repos h3 { font-size: min(var(--t-lead), calc((100cqi - 2 * var(--gutter)) / 3 / 16)); }
+}
+.beat--plain { display: block; } /* the 404 page: two rows of links, not a three-column beat */
+
+/* the mark at rest in the split, grey state of the home reveal; no animation (404) */
+.apart { --split: 46px; --mark-h: min(44svh, 22rem); }
+.apart .part, .apart .mark .body { animation: none; }
+.apart .part--c { transform: translate(var(--split), calc(-1 * var(--split))); }
+.apart .part--l { transform: translate(calc(-1 * var(--split)), var(--split)); }
+.apart .mark .body { filter: saturate(0) brightness(var(--off)); }
+
+/* ===== inner pages: the object on the stage =====
+   The mark, still, closed and lit, in the page head, in the column where the home's Run sits (Services, Open source,
+   Company). The privacy notice stays a plain document. Phones and print leave it out. */
+.page-head__obj { display: none; } /* phones and print: the header logo is close by, so the object is left out */
+.still .part, .still .mark .body { animation: none; } /* the home reveal never runs off the home page */
+
+/* a promoted intro: one sentence of the page, set large over the content columns (one per page at most).
+   Screen only: on paper it is the intro it was. On phones it is stacked under the H2, so it keeps the lead size and
+   only turns ink: at the H2's size it read as a second heading. */
+@media screen {
+  .beat--say > .intro { color: var(--ink); }
+  .beat.beat--say > .intro { margin-top: 2rem; }
+  .beat.beat--say > :is(.parts, .prose) { margin-top: 2.75rem; }
+}
+
+@media screen and (min-width: 48rem) {
+  .beat--say > .intro { font-size: var(--t-ask); font-weight: 400; line-height: 1.15; letter-spacing: -.02em; max-width: 34ch; text-wrap: balance; }
+  @supports (text-box: trim-both cap alphabetic) { .beat--say > .intro { text-box: trim-both cap alphabetic; } }
+  .beat:not(.beat--legal, .beat--plain) { padding-block: clamp(2.75rem, 10vh, 6rem); }
+  .page-head--obj { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--gutter); align-items: center; }
+  .page-head--obj > .page-head__text { grid-column: 1 / span 2; grid-row: 1; }
+  .page-head__obj { display: grid; grid-column: 3; grid-row: 1; justify-items: end; --mark-h: min(36svh, 18rem); }
+  .beat--say { grid-template-rows: auto auto; }
+  .beat.beat--say > .intro { grid-column: 2 / span 2; grid-row: 1; margin-top: 0; } /* on the H2's cap line */
+  .beat.beat--say > :is(.parts, .prose) { grid-row: 2; margin-top: 3rem; }
+  .beat.beat--say > .prose { margin-top: 2.5rem; } /* prose has no trimmed h3 above it */
+}
+
+/* large statements sit on their cap height and baseline (progressive enhancement) */
+@supports (text-box: trim-both cap alphabetic) {
+  h1, .say, .col h3, .ft__ask, .page-head h1 { text-box: trim-both cap alphabetic; }
+  /* the first lines of a beat share one cap line: the H2 beside the first part or repository */
+  .beat > h2, .part h3, .repos h3 { text-box: trim-both cap alphabetic; }
+  .beat.beat--legal > h2 { text-box: normal; }
+  .part h3 { margin-bottom: .875rem; }
+  .repos p { margin-top: .875rem; }
+}
+
+/* ===== tablet ===== */
+@media (max-width: 63.99rem) {
+  .proof { grid-template-columns: minmax(0, 1fr); row-gap: 2.5rem; }
+  .proof__text, .names { grid-column: 1; }
+  .names { font-size: var(--t-lead); }
+  .ft__co { grid-template-columns: auto minmax(0, 1fr); }
+  .ft__links { grid-column: 2; }
+}
+
+/* ===== the stage in one column: phones, and any screen taller than wide (tablets held upright) =====
+   There the column width, not the height, limits the mark, so a pinned stage would leave most of the screen empty.
+   The mark sits between the problem and the principle and plays in place; each beat takes its content height. */
+@media (max-width: 47.99rem), (orientation: portrait) {
+  .stage { display: flex; flex-direction: column; --mark-h: min(36svh, 24rem); }
+  .stage__fig { order: 2; padding-block: 1rem; }
+  .scene--principle { order: 3; }
+  .scene--cover { min-height: 0; padding-block: 2.5rem 3rem; gap: 1.75rem; }
+  .scene--cover h1 { font-size: min(7rem, 20cqi); }
+  .scene--problem { padding-block: 0 1.25rem; }
+  .scene--principle { padding-block: 1.25rem 3rem; gap: 1.25rem; }
+  .work { padding-block: 0 3.5rem; }
+}
+
+/* ===== phones ===== */
+@media (max-width: 47.99rem) {
+  .page-head--mark { grid-template-columns: minmax(0, 1fr); row-gap: 1.5rem; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .apart { --split: 34px; --mark-h: min(30svh, 15rem); }
+  .hd { padding-block: .75rem; } /* the logo's focus ring keeps 5 px of room at the top */
+  .hd__nav { order: 3; width: 100%; }
+  .hd__nav ul { column-gap: 1.25rem; }
+  .stage { --split: 34px; --mark-h: min(34svh, 19rem); }
+  .scene--cover { padding-block: 1.75rem 3rem; gap: 1.5rem; }
+  :lang(lv) .scene--cover h1 { font-size: min(9rem, 17.5cqi); } /* "izstrādājam." is the longest word */
+  :lang(lv) .scene--cover h1 span { white-space: normal; }
+  .cols { grid-template-columns: minmax(0, 1fr); row-gap: 2.25rem; }
+  /* the word beside its text, cap tops aligned; the word column fits "Design" (2.93 em), so the text gets the rest */
+  .col { display: grid; grid-template-columns: calc(3.05 * var(--t-say)) minmax(0, 1fr); column-gap: 1rem; align-items: start; }
+  .col h3 { margin: 0; }
+  .col p { max-width: none; }
+  /* Latvian words are too long for the side column: the word goes above its text */
+  :lang(lv) .col { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
+  .proof { row-gap: 1.75rem; padding-bottom: 3.5rem; }
+  .names { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; columns: auto; }
+  .names li { white-space: nowrap; padding: 0; }
+  .ft__co { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .ft__links { grid-column: 1; }
+  @supports (text-box: trim-both cap alphabetic) {
+    .col p { text-box: trim-start cap alphabetic; }
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 47.99rem),
+       (prefers-reduced-motion: no-preference) and (orientation: portrait) {
+  @supports (animation-timeline: view()) and (timeline-scope: --a) {
+    /* While the figure's top rises from 34rem below the top of the screen to the top. The figure loads lower than
+       34rem at every in-flow size (measured: 564 px or more), so even a tall tablet opens on the lit, closed mark. */
+    .stage__fig { view-timeline: --fig block; }
+    .part, .mark .body { animation-timeline: --fig; animation-range: exit-crossing -34rem exit-crossing 0%; }
+  }
+}
+
+/* ===== print: paper, the light-ground logo, no mark, no motion ===== */
+@media print {
+  /* :root three times outranks the theme selectors, whatever the system or data-theme says */
+  :root:root:root { color-scheme: light; --ground: #fff; --ink: #001b35; --quiet: #33475b; --accent: #001b35; --t-small: 8.5pt; --t-lead: 11.5pt; --logo-dark: none; --logo-light: block; }
+  @page { size: A4; margin: 14mm; }
+  body { font-size: 10pt; }
+  .hd__nav, .hd__lang, .skip, .stage__fig { display: none !important; }
+  .hd { min-height: 0; padding-block: 0 6pt; }
+  .stage { display: block; }
+  .scene--cover, .scene--problem, .scene--principle { min-height: 0; padding-block: 8pt; gap: 8pt; }
+  /* the Latvian cover heading has its own rule, so it is reset here too */
+  .scene--cover h1, :lang(lv) .scene--cover h1 { font-size: 30pt; }
+  :lang(lv) .scene--cover h1 span { white-space: normal; }
+  .say, .col h3, .proof h2 { font-size: 17pt; }
+  .lead, .col p { max-width: none; }
+  .work, .proof { padding-block: 8pt; }
+  .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14pt; }
+  .col { display: block; }
+  .col h3 { margin-bottom: 6pt; }
+  .proof { display: block; }
+  .names { display: block; columns: auto; margin-top: 8pt; font-size: 9pt; }
+  .names li { white-space: normal; }
+  .names a::after, .ft__links a[href^="http"]::after { content: " " attr(href); color: var(--quiet); }
+  .ft { padding-top: 10pt; break-inside: avoid; }
+  .ft__ask { font-size: 17pt; margin-bottom: 10pt; }
+  .ft__co { grid-template-columns: auto minmax(0, 1fr); font-size: 9pt; }
+  .ft__links { grid-column: 2; }
+  /* the logo spans the address and the links, so the footer stays short enough for one sheet */
+  .ft__co .logo { grid-row: span 2; align-self: start; }
+  a { text-decoration-color: currentColor; }
+  /* inner pages: one column, text at the print body size */
+  .page-head__fig { display: none; }
+  .page-head--mark { display: block; }
+  .page-head { padding-block: 0 8pt; }
+  .page-head h1 { font-size: 24pt; }
+  .page-head .lead { margin-top: 8pt; }
+  .beat { display: block; padding-block: 8pt; container-type: normal; }
+  .beat > h2 { font-size: 14pt; margin-bottom: 6pt; max-width: none; }
+  .beat.beat--legal > h2 { font-size: 12pt; margin: 0 0 3pt; }
+  .beat--legal { padding-block: 4pt; }
+  .beat > .intro { margin-top: 0; max-width: none; }
+  .beat > :is(.parts, .prose, .list, .facts, .repos) { margin-top: 6pt; }
+  .beat--legal > .prose { margin-top: 0; }
+  .intro, .part p, .list li, .facts dd, .repos p, .prose { font-size: inherit; }
+  .parts, .repos { display: block; }
+  .part { margin-top: 8pt; }
+  .part:first-child { margin-top: 0; }
+  .part h3 { margin-bottom: 2pt; }
+  .facts { display: block; }
+  .facts div { margin-bottom: 6pt; }
+  .repos li { margin-bottom: 8pt; break-inside: avoid; }
+  .repos .meta a[href^="http"]::after { content: " " attr(href); color: var(--quiet); }
+  .repos h3 { font-size: 10pt; }
+  li, .facts > div, .part { break-inside: avoid; }
+  .beat > h2, .part h3, .repos h3 { break-after: avoid; }
+  .beat > .intro { break-after: avoid; }
+}

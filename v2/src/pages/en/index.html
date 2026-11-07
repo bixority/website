@@ -1,0 +1,176 @@
+---
+title: Bixority — software and infrastructure, designed, built and run by one team
+description: Bixority is an engineering company in Riga. Since 2010 we have designed, built and run software and infrastructure: DevOps, SRE, Kubernetes and full-cycle software development.
+---
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__inner">
+        <div class="hero__text">
+          <h1 id="hero-title">Software and infrastructure, designed, built and run by one team.</h1>
+          <p class="hero__lede">Bixority is an engineering company in Riga. Since 2010 we have worked across DevOps, SRE and software development, and we stay responsible for what we build after it goes into production.</p>
+          <div class="hero__actions">
+            <a class="button button--primary" href="{{ url_services }}">See our services</a>
+            <a class="button button--quiet" href="{{ url_open_source }}">Browse our open-source tools</a>
+          </div>
+          <dl class="facts-row">
+            <div><dt>{{ m_location_label }}</dt><dd>{{ m_location }}</dd></div>
+            <div><dt>{{ m_coords_label }}</dt><dd>{{ coordinates }}</dd></div>
+            <div><dt>{{ m_est_label }}</dt><dd>{{ m_est }}</dd></div>
+          </dl>
+        </div>
+        <figure class="hero__fig">
+          {{ partial_fig-mark }}
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="what-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="what-title">What we do</h2>
+        </div>
+        <ul class="sheets">
+          <li class="sheet">
+            <div class="sheet__fig" aria-hidden="true">
+              <svg class="schematic" viewBox="0 0 200 120"><rect class="ink" x="72" y="8" width="56" height="22"/><path d="M100 30V42M36 42H164M36 42V52M100 42V52M164 42V52"/><rect class="ink" x="12" y="52" width="48" height="34"/><rect class="ink" x="76" y="52" width="48" height="34"/><rect class="ink" x="140" y="52" width="48" height="34"/><rect class="dot" x="20" y="61" width="8" height="8"/><rect class="fill-lime" x="32" y="61" width="8" height="8"/><rect class="dot" x="84" y="61" width="8" height="8"/><rect class="dot" x="96" y="61" width="8" height="8"/><rect class="fill-lime" x="108" y="61" width="8" height="8"/><rect class="fill-lime" x="148" y="61" width="8" height="8"/><rect class="dot" x="160" y="61" width="8" height="8"/><path d="M8 106H70L78 96L86 114L94 100L100 106H192"/></svg>
+            </div>
+            <h3>DevOps and SRE</h3>
+            <p>We design, automate and operate the platforms your software runs on, from the first cluster to on-call.</p>
+            <ul class="ticks">
+              <li>Kubernetes on-premises and on EKS, AKS and GKE</li>
+              <li>Infrastructure as code</li>
+              <li>CI/CD and release engineering</li>
+              <li>Observability and incident response</li>
+              <li>Database operations: migrations, backups, maintenance</li>
+            </ul>
+            <a class="more" href="{{ url_services }}">Services in detail</a>
+          </li>
+          <li class="sheet">
+            <div class="sheet__fig" aria-hidden="true">
+              <svg class="schematic" viewBox="0 0 200 120"><rect class="ink" x="20" y="10" width="160" height="96"/><path class="ink" d="M20 26H180"/><circle class="dot" cx="31" cy="18" r="2.5"/><circle class="dot" cx="40" cy="18" r="2.5"/><circle class="dot" cx="49" cy="18" r="2.5"/><path d="M34 42H96M46 54H128M46 66H110M34 78H84"/><rect class="fill-lime" x="140" y="70" width="26" height="26"/><path class="ink" d="M146 83L151 88L160 77"/></svg>
+            </div>
+            <h3>Software development</h3>
+            <p>We take a product from architecture to maintenance in Rust, Python and TypeScript. Every change is tested and reviewed before it ships.</p>
+            <a class="more" href="{{ url_services }}">How we deliver software</a>
+          </li>
+          <li class="sheet">
+            <div class="sheet__fig" aria-hidden="true">
+              <svg class="schematic" viewBox="0 0 200 120"><path class="ink" d="M14 70H186"/><path d="M70 70C82 70 80 34 96 34H120C136 34 134 70 150 70"/><circle class="ink" cx="30" cy="70" r="6"/><circle class="ink" cx="70" cy="70" r="6"/><circle class="ink" cx="110" cy="70" r="6"/><circle class="dot" cx="100" cy="34" r="5"/><circle class="dot" cx="124" cy="34" r="5"/><circle class="fill-lime" cx="150" cy="70" r="7"/></svg>
+            </div>
+            <h3>Open-source tools</h3>
+            <p>We publish the tools we build for our own work: object storage access, PostgreSQL migration and maintenance, message bridging. All of them are free software under the GPL or AGPL.</p>
+            <a class="more" href="{{ url_open_source }}">See the projects</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section section--raised" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="how-title">One team from design to production</h2>
+          <p>The people who design a system also build it and run it. Nothing gets lost in a hand-over, and nobody can say a problem belongs to someone else.</p>
+        </div>
+        <ol class="flow">
+            <li class="flow__step">
+              <h3>Design</h3>
+              <p>We review what you have, name the risks, and put the proposed architecture and plan in writing before work starts.</p>
+              <div class="artifact">
+                <p class="artifact__bar"><span>design-note.md</span><span>agreed before work starts</span></p>
+                <ul class="artifact__rows">
+                  <li><span class="s">§1</span><span class="k">Problem</span><span class="v">What has to change, and why</span></li>
+                  <li><span class="s">§2</span><span class="k">Constraints</span><span class="v">Budget, deadlines, the systems already in place</span></li>
+                  <li><span class="s">§3</span><span class="k">Risks</span><span class="v">Named up front, each with a plan</span></li>
+                  <li><span class="s">§4</span><span class="k">Decision</span><span class="v">Architecture and plan, in writing</span></li>
+                </ul>
+              </div>
+            </li>
+            <li class="flow__step">
+              <h3>Build</h3>
+              <p>Every change is tested and reviewed. Decisions are recorded where the next engineer will look for them.</p>
+              <div class="artifact">
+                <p class="artifact__bar"><span>pipeline: main</span><span>every change</span></p>
+                <ul class="artifact__rows">
+                  <li><span><span class="ok">✓</span></span><span class="k">Build</span><span class="v">From a clean checkout</span></li>
+                  <li><span><span class="ok">✓</span></span><span class="k">Tests</span><span class="v">Automated, on every change</span></li>
+                  <li><span><span class="ok">✓</span></span><span class="k">Review</span><span class="v">Approved by a second engineer</span></li>
+                  <li><span><span class="ok">✓</span></span><span class="k">Release</span><span class="v">Signed and versioned</span></li>
+                </ul>
+              </div>
+            </li>
+            <li class="flow__step">
+              <h3>Run</h3>
+              <p>We monitor what we built, respond to incidents, and keep it patched and upgraded long after launch.</p>
+              <div class="artifact">
+                <p class="artifact__bar"><span>runbook: production</span><span>after launch</span></p>
+                <ul class="artifact__rows">
+                  <li><span class="s">●</span><span class="k">Monitoring</span><span class="v">Metrics, logs and traces</span></li>
+                  <li><span class="s">●</span><span class="k">Alerts</span><span class="v">Routed to whoever is on call</span></li>
+                  <li><span class="s">●</span><span class="k">Runbooks</span><span class="v">Linked from the alerts they answer</span></li>
+                  <li><span class="s">●</span><span class="k">Upgrades</span><span class="v">Patched and scheduled, not postponed</span></li>
+                </ul>
+              </div>
+            </li>
+          </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="quality-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="quality-title">Quality, in practice</h2>
+        </div>
+        <p class="statement__lede">“Because quality matters” is the principle Bixority was founded on. It covers every part of the work: the code, the infrastructure, how systems are operated and how we communicate.</p>
+        <dl class="spec">
+          <div>
+            <dt>Tested and reviewed</dt>
+            <dd>Changes ship after automated tests and a second pair of eyes, not before.</dd>
+          </div>
+          <div>
+            <dt>Open by default</dt>
+            <dd>We publish our tools and document what they do and what they don’t.</dd>
+          </div>
+          <div>
+            <dt>Built to recover</dt>
+            <dd>Systems are designed to fail safely and come back without heroics.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section section--raised" aria-labelledby="oss-title">
+      <div class="wrap oss">
+        <div class="section__head">
+          <h2 id="oss-title">Open-source tools</h2>
+          <p>Eight projects, all written in Rust and published on GitHub and Codeberg.</p>
+          <a class="more" href="{{ url_open_source }}">All eight projects</a>
+        </div>
+        <div class="tree">
+          <p class="tree__root"><span>github.com/bixority</span><span>codeberg.org/bixority</span></p>
+          <ul class="tree__list">
+            <li class="tree__item">
+              <a class="repo-name" href="https://github.com/bixority/object-storage-client">object-storage-client</a>
+              <p>One URL-based API for AWS S3, Google Cloud Storage, Azure Blob Storage, HTTP(S) and the local filesystem, as a Rust library, Python bindings, the <code>osc</code> command line and the <code>osc-gui</code> desktop browser.</p>
+              <p class="repo-meta"><a href="https://bixority.github.io/object-storage-client/">Product page</a> <a href="https://codeberg.org/bixority/object-storage-client">Codeberg</a></p>
+            </li>
+            <li class="tree__item">
+              <a class="repo-name" href="https://github.com/bixority/pg-migrate">pg-migrate</a>
+              <p>Moves every user database and the global objects between two PostgreSQL servers in parallel, then checks row counts on both sides.</p>
+            </li>
+            <li class="tree__item">
+              <a class="repo-name" href="https://github.com/bixority/pg-maintenance">pg-maintenance</a>
+              <p>Deletes rows older than a set number of days from PostgreSQL tables, in batches if needed.</p>
+            </li>
+            <li class="tree__item">
+              <a class="repo-name" href="https://github.com/bixority/object-storage-maintenance">object-storage-maintenance</a>
+              <p>Streams old objects, such as audit logs, into a single compressed TAR archive.</p>
+            </li>
+            <li class="tree__item">
+              <a class="repo-name" href="https://github.com/bixority/amqp-bridge">amqp-bridge</a>
+              <p>Forwards messages between two AMQP servers and reconnects on its own; also usable as a library with custom message transformers.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {{ partial_contact }}

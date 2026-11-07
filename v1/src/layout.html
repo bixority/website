@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+{{ robots }}
+{{ canonical_link }}
+{{ alternates }}
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#001b35">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bixority">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:locale" content="{{ og_locale }}">
+  <meta property="og:locale:alternate" content="{{ og_locale_alt }}">
+  <meta property="og:image" content="{{ base_url }}/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bixority logo: because quality matters">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ css }}">
+  <script src="{{ js }}" defer></script>
+{{ jsonld }}
+</head>
+<body>
+  <a class="skip-link" href="#content">{{ skip }}</a>
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="site-header__home" href="{{ home_url }}">
+        <img src="/assets/img/logo.svg" alt="{{ home_link }}" width="215" height="80">
+      </a>
+      <nav class="site-nav" aria-label="{{ nav_label }}">
+        <ul>
+{{ nav }}
+        </ul>
+      </nav>
+      <p class="lang-switch">{{ lang_switch }}</p>
+    </div>
+  </header>
+  <main id="content" tabindex="-1">
+{{ content }}
+  </main>
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <div class="site-footer__brand">
+        <img src="/assets/img/logo.svg" alt="Bixority: because quality matters" width="242" height="90">
+      </div>
+      <section class="site-footer__col" aria-labelledby="footer-company">
+        <h2 id="footer-company">{{ f_company_details }}</h2>
+        <dl class="details">
+          <div><dt class="visually-hidden">{{ f_name }}</dt><dd>{{ legal_name }}</dd></div>
+          <div><dt>{{ f_reg_no }}</dt><dd>{{ reg_no }}</dd></div>
+          <div><dt>{{ f_vat }}</dt><dd>{{ vat }}</dd></div>
+          <div><dt>{{ f_address }}</dt><dd>{{ street }}, {{ city }}, {{ postal }}, {{ f_country }}</dd></div>
+        </dl>
+      </section>
+      <section class="site-footer__col" aria-labelledby="footer-contact">
+        <h2 id="footer-contact">{{ f_contact }}</h2>
+        <ul class="plain">
+          <li><a href="mailto:{{ email }}">{{ email }}</a></li>
+          <li><a href="https://github.com/bixority">GitHub</a></li>
+          <li><a href="https://codeberg.org/bixority">Codeberg</a></li>
+          <li><a href="{{ privacy_url }}">{{ f_privacy }}</a></li>
+        </ul>
+      </section>
+      <p class="site-footer__legal">© {{ year }} {{ legal_name }}</p>
+    </div>
+  </footer>
+</body>
+</html>

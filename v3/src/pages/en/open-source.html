@@ -1,0 +1,81 @@
+---
+title: Open-source tools — Bixority
+description: Eight open-source tools from Bixority, all written in Rust: object storage access and archiving, PostgreSQL migration and maintenance, AMQP bridging, email and SMS sending, and an HTTP API client.
+---
+    <section class="page-head page-head--obj wrap" aria-labelledby="page-title">
+      <div class="page-head__text">
+        <h1 id="page-title">Open-source tools</h1>
+        <p class="lead">We publish the tools we build for our own work. All eight are written in Rust, licensed as free software, and available on GitHub and Codeberg.</p>
+        <ul class="links">
+          <li><a href="https://github.com/bixority">github.com/bixority</a></li>
+          <li><a href="https://codeberg.org/bixority">codeberg.org/bixority</a></li>
+        </ul>
+      </div>
+      <div class="page-head__obj still" aria-hidden="true">
+        {{ partial_mark }}
+      </div>
+    </section>
+
+    <section class="beat wrap" id="storage" aria-labelledby="storage-title">
+      <h2 id="storage-title">Object storage</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/object-storage-client">object-storage-client</a></h3>
+          <p>One URL-based API for AWS S3, Google Cloud Storage, Azure Blob Storage, HTTP(S) and the local filesystem. It ships as a Rust library, Python bindings, the <code>osc</code> command line and the <code class="nw">osc-gui</code> desktop browser.</p>
+          <ul class="list">
+            <li>Copy and move objects between providers</li>
+            <li>Streaming uploads and downloads, with multipart uploads for large objects</li>
+            <li>Pre-signed URLs for S3, Google Cloud Storage and Azure</li>
+            <li>Optional <span class="nw">client-side</span> encryption, with key rotation</li>
+          </ul>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://bixority.github.io/object-storage-client/">Product page</a> <a href="https://github.com/bixority/object-storage-client">GitHub</a> <a href="https://codeberg.org/bixority/object-storage-client">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/object-storage-maintenance">object-storage-maintenance</a></h3>
+          <p>Gathers objects older than a given date, such as audit logs, into a single TAR archive compressed with XZ, streaming the whole way.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/object-storage-maintenance">GitHub</a> <a href="https://codeberg.org/bixority/object-storage-maintenance">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="beat wrap" id="postgresql" aria-labelledby="postgresql-title">
+      <h2 id="postgresql-title">PostgreSQL</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/pg-migrate">pg-migrate</a></h3>
+          <p>Moves every user database and the global objects, such as roles, from one PostgreSQL server to another. It runs dumps and restores in parallel and checks row counts on both sides.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/pg-migrate">GitHub</a> <a href="https://codeberg.org/bixority/pg-migrate">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/pg-maintenance">pg-maintenance</a></h3>
+          <p>Deletes rows older than a set number of days from PostgreSQL tables, in batches if needed.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/pg-maintenance">GitHub</a> <a href="https://codeberg.org/bixority/pg-maintenance">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="beat wrap" id="messaging" aria-labelledby="messaging-title">
+      <h2 id="messaging-title">Messaging and integration</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/amqp-bridge">amqp-bridge</a></h3>
+          <p>Forwards messages between two AMQP servers, reconnects on its own and exposes health checks. Also usable as a library with a custom message transformer.</p>
+          <p class="meta"><span>AGPL-3.0 license</span> <a href="https://github.com/bixority/amqp-bridge">GitHub</a> <a href="https://codeberg.org/bixority/amqp-bridge">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/email-sender">email-sender</a></h3>
+          <p>Takes JSON messages from a RabbitMQ queue and sends them as email over SMTP, with metrics, tracing and structured logs.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/email-sender">GitHub</a> <a href="https://codeberg.org/bixority/email-sender">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/esteria-api-client">esteria-api-client</a></h3>
+          <p>Sends SMS through the Esteria API, as a Rust library, a command-line tool and Python bindings, with scheduled sending and delivery reports.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/esteria-api-client">GitHub</a> <a href="https://codeberg.org/bixority/esteria-api-client">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/api-client">api-client</a></h3>
+          <p>An HTTP API client for Rust built on Tower, with retries, rate limiting and audit logs that record each request as a <code>curl</code> command with credentials redacted.</p>
+          <p class="meta"><span>GPL-3.0 license</span> <a href="https://github.com/bixority/api-client">GitHub</a> <a href="https://codeberg.org/bixority/api-client">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>

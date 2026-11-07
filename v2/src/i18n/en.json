@@ -1,0 +1,46 @@
+{
+  "skip": "Skip to content",
+  "home_link": "Bixority home page",
+  "nav_label": "Main",
+  "lang_label": "Language",
+  "nav": {
+    "services": "Services",
+    "open-source": "Open source",
+    "company": "Company"
+  },
+  "footer": {
+    "name": "Company name",
+    "company_details": "Company details",
+    "reg_no": "Registration No.",
+    "vat": "VAT No.",
+    "address": "Legal address",
+    "country": "Latvia",
+    "contact": "Contact",
+    "privacy": "Privacy notice",
+    "source": "Source code"
+  },
+  "copy": {
+    "button": "Copy address",
+    "done": "Copied",
+    "failed": "Select the address to copy it"
+  },
+  "contact": {
+    "title": "Talk to us",
+    "lede": "Write to us about the system you run or the one you want to build."
+  },
+  "meta": {
+    "location_label": "Location",
+    "location": "Rīga, Latvia",
+    "coords_label": "Coordinates",
+    "est_label": "Established",
+    "est": "2010",
+    "time_label": "Local time in Rīga"
+  },
+  "block": {
+    "company": "Company",
+    "contact": "Contact"
+  },
+  "menu": "Menu",
+  "fig_title": "Construction of the Bixority mark: two chevrons with a 60° apex and outer edges at 15° and 75°, the second offset by twice the band thickness t along the 45° axis.",
+  "index_label": "On this page"
+}

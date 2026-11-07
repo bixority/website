@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+{{ robots }}
+{{ canonical_link }}
+{{ alternates }}
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#001b35" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#e3e6e9" media="(prefers-color-scheme: light)">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bixority">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:locale" content="{{ og_locale }}">
+  <meta property="og:locale:alternate" content="{{ og_locale_alt }}">
+  <meta property="og:image" content="{{ base_url }}/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bixority logo: because quality matters">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ css }}">
+  <script src="{{ js }}" defer></script>
+{{ jsonld }}
+</head>
+<body>
+  <a class="skip" href="#content">{{ skip }}</a>
+
+  <header class="hd wrap">
+    <a class="logo" href="{{ home_url }}">
+      <img class="logo__dark" src="/assets/img/logo.svg" alt="{{ home_link }}" width="172" height="64">
+      <img class="logo__light" src="/assets/img/logo-ink.svg" alt="{{ home_link }}" width="172" height="64">
+    </a>
+    <nav class="hd__nav" aria-label="{{ nav_label }}">
+      <ul>
+{{ nav }}
+      </ul>
+    </nav>
+    {{ lang_switch }}
+  </header>
+
+  <main id="content" tabindex="-1">
+{{ content }}
+  </main>
+
+  <footer class="ft wrap">
+    <div class="ft__ask">
+      <h2 class="mute">{{ f_ask }}</h2>
+      <p><a href="mailto:{{ email }}">{{ email }}</a></p>
+    </div>
+    <div class="ft__co">
+      <a class="logo" href="{{ home_url }}">
+        <img class="logo__dark" src="/assets/img/logo.svg" alt="{{ home_link }}" width="172" height="64" loading="lazy">
+        <img class="logo__light" src="/assets/img/logo-ink.svg" alt="{{ home_link }}" width="172" height="64" loading="lazy">
+      </a>
+      <address>{{ legal_display }}, {{ street_nbsp }}, <span class="nw">{{ city }}, {{ postal }}, {{ f_country }}</span><br>{{ f_reg_no }} {{ reg_no }}, {{ f_vat }} {{ vat }}</address>
+      <ul class="ft__links">
+        <li><a href="https://github.com/bixority">GitHub</a></li>
+        <li><a href="https://codeberg.org/bixority">Codeberg</a></li>
+        <li><a href="{{ privacy_url }}">{{ f_privacy }}</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

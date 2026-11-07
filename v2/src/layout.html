@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}">
+{{ robots }}
+{{ canonical_link }}
+{{ alternates }}
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#001b35">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bixority">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:locale" content="{{ og_locale }}">
+  <meta property="og:locale:alternate" content="{{ og_locale_alt }}">
+  <meta property="og:image" content="{{ base_url }}/assets/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bixority logo: because quality matters">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ css }}">
+  <script src="{{ js }}" defer></script>
+{{ jsonld }}
+</head>
+<body>
+  <a class="skip-link" href="#content">{{ skip }}</a>
+  <header class="hd">
+    <div class="wrap hd__row">
+      <a class="hd__cell hd__home" href="{{ home_url }}">
+        <img src="/assets/img/logo.svg" alt="{{ home_link }}" width="189" height="70">
+      </a>
+      <nav class="hd__nav" aria-label="{{ nav_label }}">
+        <ul>
+{{ nav }}
+        </ul>
+      </nav>
+      <p class="hd__cell hd__clock" title="{{ m_time_label }}"><span>{{ m_city }}</span> <time data-clock hidden></time></p>
+      <p class="hd__cell hd__lang">{{ lang_switch }}</p>
+    </div>
+  </header>
+  <main id="content" tabindex="-1">
+{{ content }}
+  </main>
+  <footer class="ft">
+    <div class="wrap">
+      <div class="ft__block">
+        <a class="ft__cell ft__logo" href="{{ home_url }}">
+          <img src="/assets/img/logo.svg" alt="{{ home_link }}" width="189" height="70" loading="lazy">
+        </a>
+        <dl class="ft__cell">
+          <dt>{{ b_company }}</dt>
+          <dd>{{ legal_name }}<br>{{ street }}, {{ city }}, {{ postal }}, {{ f_country }}</dd>
+        </dl>
+        <dl class="ft__cell">
+          <dt>{{ f_reg_no }}</dt>
+          <dd>{{ reg_no }}</dd>
+          <dt>{{ f_vat }}</dt>
+          <dd>{{ vat }}</dd>
+        </dl>
+        <dl class="ft__cell">
+          <dt>{{ b_contact }}</dt>
+          <dd>
+            <a href="mailto:{{ email }}">{{ email }}</a><br>
+            <a href="https://github.com/bixority">GitHub</a>, <a href="https://codeberg.org/bixority">Codeberg</a><br>
+            <a href="{{ privacy_url }}">{{ f_privacy }}</a>
+          </dd>
+        </dl>
+      </div>
+      <p class="ft__legal">© {{ year }} {{ legal_name }}</p>
+    </div>
+  </footer>
+</body>
+</html>

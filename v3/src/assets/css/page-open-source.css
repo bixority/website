@@ -1,0 +1,4 @@
+/* open source: the feature list inside a repository entry, and the organisation links under the lead */
+.repos .list { margin-top: .75rem; }
+.repos .list + .meta { margin-top: .75rem; }
+.page-head .links { margin-top: 1.5rem; }

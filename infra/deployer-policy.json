@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WebsiteAndStateBuckets",
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::bixority-website-<account ID>",
+        "arn:aws:s3:::bixority-website-<account ID>/*",
+        "arn:aws:s3:::bixority-tfstate-<account ID>",
+        "arn:aws:s3:::bixority-tfstate-<account ID>/*"
+      ]
+    },
+    {
+      "Sid": "CloudFront",
+      "Effect": "Allow",
+      "Action": "cloudfront:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "CertificatesForCloudFront",
+      "Effect": "Allow",
+      "Action": "acm:*",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+  ]
+}

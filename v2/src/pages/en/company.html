@@ -1,0 +1,86 @@
+---
+title: Company — Bixority
+description: SIA "Bixority" is an engineering company in Riga, Latvia, founded in 2010. Company details, registration and VAT numbers, and how to reach us.
+---
+    <section class="page-head" aria-labelledby="page-title">
+      <div class="wrap page-head__inner">
+        <h1 id="page-title">Company</h1>
+        <p>Bixority is an engineering company in Riga, Latvia, founded in 2010.</p>
+      </div>
+    </section>
+
+    <div class="section">
+      <div class="wrap with-index">
+        <nav class="index" aria-label="{{ index_label }}" data-index>
+          <p class="label">{{ index_label }}</p>
+          <ol>
+            <li><a href="#about">About us</a></li>
+            <li><a href="#principle">Our principle</a></li>
+            <li><a href="#independence">Who we answer to</a></li>
+            <li><a href="#details">Company details</a></li>
+          </ol>
+        </nav>
+
+        <div>
+          <section class="block" id="about" aria-labelledby="about-title">
+            <h2 id="about-title">About us</h2>
+            <div class="prose">
+              <p>We are a small team of senior engineers. We design software and infrastructure, build it and keep it running for companies that need it to work, and to keep working.</p>
+              <p>Covering the whole cycle is a deliberate choice. The engineer who designed a system knows why it was built that way, and what we learn from running it goes straight back into the design.</p>
+              <p>We also publish the tools we build for our own work as open source, so anyone can read the code and judge its quality for themselves.</p>
+            </div>
+          </section>
+
+          <section class="block" id="principle" aria-labelledby="principle-title">
+            <h2 id="principle-title">Our principle</h2>
+            <p>“Because quality matters” is a principle our founder has worked by for a whole career. It applies to every part of IT: code, infrastructure, operations, documentation and the way we communicate.</p>
+            <dl class="spec">
+              <div>
+                <dt>Tested and reviewed</dt>
+                <dd>Changes ship after automated tests and a second pair of eyes, not before.</dd>
+              </div>
+              <div>
+                <dt>Open by default</dt>
+                <dd>We publish our tools and document what they do and what they don’t.</dd>
+              </div>
+              <div>
+                <dt>Built to recover</dt>
+                <dd>Systems are designed to fail safely and come back without heroics.</dd>
+              </div>
+              <div>
+                <dt>We question the plan</dt>
+                <dd>We ask awkward questions early. When a plan looks risky or wrong, we tell you directly, explain why and propose an alternative, because problems are cheapest to fix before anything is built.</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="block" id="independence" aria-labelledby="independence-title">
+            <h2 id="independence-title">Who we answer to</h2>
+            <p>Our clients and our own standards, nobody else.</p>
+            <div class="prose">
+              <p>Bixority is owned by its founder. It has no investors, takes no subsidies or grants, has no loans and belongs to no group. No funding round, grant condition or investor’s exit plan decides what we build, how fast we grow or what we value.</p>
+            </div>
+          </section>
+
+          <section class="block" id="details" aria-labelledby="details-title">
+            <h2 id="details-title">Company details</h2>
+            <dl class="facts">
+              <dt>Name</dt>
+              <dd>{{ legal_name }}</dd>
+              <dt>Registration number</dt>
+              <dd>{{ reg_no }}, Register of Enterprises of the Republic of Latvia</dd>
+              <dt>Registered</dt>
+              <dd>20 October 2010</dd>
+              <dt>VAT number</dt>
+              <dd>{{ vat }}</dd>
+              <dt>Legal address</dt>
+              <dd>{{ street }}, {{ city }}, {{ postal }}, {{ f_country }}</dd>
+              <dt>Email</dt>
+              <dd><a href="mailto:{{ email }}">{{ email }}</a></dd>
+            </dl>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    {{ partial_contact }}

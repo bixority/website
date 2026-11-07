@@ -1,0 +1,46 @@
+{
+  "skip": "Pāriet uz saturu",
+  "home_link": "Bixority sākumlapa",
+  "nav_label": "Galvenā navigācija",
+  "lang_label": "Valoda",
+  "nav": {
+    "services": "Pakalpojumi",
+    "open-source": "Atvērtais kods",
+    "company": "Uzņēmums"
+  },
+  "footer": {
+    "name": "Nosaukums",
+    "company_details": "Rekvizīti",
+    "reg_no": "Reģistrācijas Nr.",
+    "vat": "PVN maksātāja Nr.",
+    "address": "Juridiskā adrese",
+    "country": "Latvija",
+    "contact": "Kontakti",
+    "privacy": "Privātuma paziņojums",
+    "source": "Pirmkods"
+  },
+  "copy": {
+    "button": "Kopēt adresi",
+    "done": "Nokopēts",
+    "failed": "Iezīmējiet adresi, lai to nokopētu"
+  },
+  "contact": {
+    "title": "Sazinieties ar mums",
+    "lede": "Uzrakstiet par sistēmu, kas jums jau darbojas, vai par to, ko vēlaties izveidot."
+  },
+  "meta": {
+    "location_label": "Atrašanās vieta",
+    "location": "Rīga, Latvija",
+    "coords_label": "Koordinātas",
+    "est_label": "Dibināts",
+    "est": "2010",
+    "time_label": "Vietējais laiks Rīgā"
+  },
+  "block": {
+    "company": "Uzņēmums",
+    "contact": "Kontakti"
+  },
+  "menu": "Izvēlne",
+  "fig_title": "Bixority zīmes konstrukcija: divi ševroni ar 60° virsotnes leņķi un ārējām malām 15° un 75° leņķī, otrs nobīdīts par divkāršu joslas biezumu t pa 45° asi.",
+  "index_label": "Šajā lapā"
+}

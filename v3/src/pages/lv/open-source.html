@@ -1,0 +1,81 @@
+---
+title: Atvērtā koda rīki — Bixority
+description: Astoņi Bixority atvērtā koda rīki, visi rakstīti Rust valodā: piekļuve objektu krātuvēm un to arhivēšana, PostgreSQL migrācija un apkope, AMQP ziņojumu pārsūtīšana, e-pasta un SMS sūtīšana un HTTP API klients.
+---
+    <section class="page-head page-head--obj wrap" aria-labelledby="page-title">
+      <div class="page-head__text">
+        <h1 id="page-title">Atvērtā koda rīki</h1>
+        <p class="lead">Publicējam rīkus, ko radām savam darbam. Visi astoņi ir rakstīti Rust valodā, ir brīvā programmatūra un pieejami GitHub un Codeberg.</p>
+        <ul class="links">
+          <li><a href="https://github.com/bixority">github.com/bixority</a></li>
+          <li><a href="https://codeberg.org/bixority">codeberg.org/bixority</a></li>
+        </ul>
+      </div>
+      <div class="page-head__obj still" aria-hidden="true">
+        {{ partial_mark }}
+      </div>
+    </section>
+
+    <section class="beat wrap" id="storage" aria-labelledby="storage-title">
+      <h2 id="storage-title">Objektu krātuves</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/object-storage-client">object-storage-client</a></h3>
+          <p>Vienota, uz URL balstīta saskarne AWS S3, Google Cloud Storage, Azure Blob Storage, HTTP(S) un lokālajai failu sistēmai. Pieejama kā Rust bibliotēka, Python saistījumi, komandrindas rīks <code>osc</code> un darbvirsmas pārlūks <code>osc-gui</code>.</p>
+          <ul class="list">
+            <li>Objektu kopēšana un pārvietošana starp pakalpojumu sniedzējiem</li>
+            <li>Straumēta augšupielāde un lejupielāde, lieliem objektiem daudzdaļu augšupielāde</li>
+            <li>Iepriekš parakstīti URL S3, Google Cloud Storage un Azure</li>
+            <li>Izvēles klienta puses šifrēšana ar atslēgu rotāciju</li>
+          </ul>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://bixority.github.io/object-storage-client/">Produkta lapa</a> <a href="https://github.com/bixority/object-storage-client">GitHub</a> <a href="https://codeberg.org/bixority/object-storage-client">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/object-storage-maintenance">object-storage-maintenance</a></h3>
+          <p>Apvieno objektus, kas vecāki par norādīto datumu, piemēram, audita žurnālus, vienā ar XZ saspiestā TAR arhīvā, visu laiku straumējot datus.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/object-storage-maintenance">GitHub</a> <a href="https://codeberg.org/bixority/object-storage-maintenance">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="beat wrap" id="postgresql" aria-labelledby="postgresql-title">
+      <h2 id="postgresql-title">PostgreSQL</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/pg-migrate">pg-migrate</a></h3>
+          <p>Pārnes visas lietotāju datubāzes un globālos objektus, piemēram, lomas, no viena PostgreSQL servera uz citu. Pārnesi veic paralēli un beigās pārbauda rindu skaitu abās pusēs.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/pg-migrate">GitHub</a> <a href="https://codeberg.org/bixority/pg-migrate">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/pg-maintenance">pg-maintenance</a></h3>
+          <p>Dzēš PostgreSQL tabulās rindas, kas vecākas par noteiktu dienu skaitu, vajadzības gadījumā pa daļām.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/pg-maintenance">GitHub</a> <a href="https://codeberg.org/bixority/pg-maintenance">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="beat wrap" id="messaging" aria-labelledby="messaging-title">
+      <h2 id="messaging-title">Ziņojumapmaiņa un integrācija</h2>
+      <ul class="repos">
+        <li>
+          <h3><a href="https://github.com/bixority/amqp-bridge">amqp-bridge</a></h3>
+          <p>Pārsūta ziņojumus starp diviem AMQP serveriem, pats atjauno savienojumu un nodrošina stāvokļa pārbaudes. Izmantojams arī kā bibliotēka ar pielāgotu ziņojumu pārveidotāju.</p>
+          <p class="meta"><span>AGPL-3.0 licence</span> <a href="https://github.com/bixority/amqp-bridge">GitHub</a> <a href="https://codeberg.org/bixority/amqp-bridge">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/email-sender">email-sender</a></h3>
+          <p>Saņem JSON ziņojumus no RabbitMQ rindas un nosūta tos kā e-pastu pa SMTP, ar metrikām, trasēšanu un strukturētiem žurnāliem.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/email-sender">GitHub</a> <a href="https://codeberg.org/bixority/email-sender">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/esteria-api-client">esteria-api-client</a></h3>
+          <p>Sūta SMS caur Esteria API kā Rust bibliotēka, komandrindas rīks un Python saistījumi, ar ieplānotu sūtīšanu un piegādes atskaitēm.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/esteria-api-client">GitHub</a> <a href="https://codeberg.org/bixority/esteria-api-client">Codeberg</a></p>
+        </li>
+        <li>
+          <h3><a href="https://github.com/bixority/api-client">api-client</a></h3>
+          <p>Uz Tower balstīts HTTP API klients Rust valodai ar atkārtotiem mēģinājumiem, pieprasījumu ierobežošanu un audita žurnāliem, kas katru pieprasījumu pieraksta kā <code>curl</code> komandu ar paslēptiem akreditācijas datiem.</p>
+          <p class="meta"><span>GPL-3.0 licence</span> <a href="https://github.com/bixority/api-client">GitHub</a> <a href="https://codeberg.org/bixority/api-client">Codeberg</a></p>
+        </li>
+      </ul>
+    </section>
