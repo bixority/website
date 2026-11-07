@@ -36,9 +36,9 @@ address was missing, so view it through the local server.
 | `src/layout.html`            | The page shell every page is rendered into |
 | `src/pages/{en,lv}/*.html`   | One file per page and language: front matter (`title`, `description`, optional `robots: noindex`) then the page body |
 | `src/partials/*.html`        | Sections shared by several pages, included as `{{ partial_<name> }}`; today only `mark.html`, the 3D mark |
-| `tools/gen_mark.py`          | Generates `src/partials/mark.html` (the lit, extruded mark as inline SVG) from the logo's geometry; run `python3 tools/gen_mark.py` after changing the mark |
+| `tools/gen_mark.py`          | Generates `src/partials/mark.html` (the lit, extruded mark as inline SVG, plus the hidden solids and shadows the page change uses) from the logo's geometry; run `python3 tools/gen_mark.py` after changing the mark, and put the output of `python3 tools/gen_mark.py --css` in place of the rules marked "generated" in `site.css` |
 | `src/assets/css/*.css`       | `site.css` is the design system (tokens, header, footer, home, inner-page components, print; its top comment documents the components). Add `page-<name>.css` for page-specific rules |
-| `src/assets/js/site.js`      | Progressive enhancement only: on `file://` it points directory links (`services/`) at their `index.html`. Nothing else |
+| `src/assets/js/site.js`      | Progressive enhancement only: on `file://` it points directory links (`services/`) at their `index.html`; during a page change it keeps the mark out of the motion when the mark is mostly off screen or the page was restored scrolled (see `site.css`, VIEW TRANSITIONS). Nothing else |
 | `src/assets/fonts/`          | Self-hosted Geist (Latin and Latin Extended) and Geist Mono (Latin) (SIL OFL 1.1) |
 | `src/assets/img/`            | Logos (`logo.svg` for dark grounds, `logo-ink.svg` for light grounds and print), favicons and the share image, generated from `brand/` |
 | `brand/`                     | Logo SVGs and the script that generates them (`brand/source/`) |

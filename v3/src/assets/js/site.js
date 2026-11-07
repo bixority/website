@@ -13,3 +13,18 @@ if (location.protocol === "file:") {
     }
   }
 }
+
+// The page change (site.css, VIEW TRANSITIONS): the mark stays out of the motion when less than two thirds of it is
+// on screen, on the page being left or the page being opened, and when the page being opened was restored scrolled
+// (Back, Forward), where the home's mark may be split and grey. Without this file only those cases look worse.
+const mark = document.querySelector(".mark");
+if (mark) {
+  const keepOut = (event, scrolled) => {
+    const types = event.viewTransition?.types;
+    if (!types) return;
+    const r = mark.getBoundingClientRect();
+    if (scrolled || Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) < r.height * 2 / 3) types.add("mark-off");
+  };
+  addEventListener("pageswap", (event) => keepOut(event, false));
+  addEventListener("pagereveal", (event) => keepOut(event, scrollY > 0));
+}

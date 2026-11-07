@@ -15,7 +15,7 @@ The design follows Steve Jobs's design principles, taken from primary sources wh
 7. **Simplicity by depth, not by hiding.** Cut decoration, never the facts a buyer needs.
 8. **The presentation is evidence.** Page weight of 150 KB or less including fonts, no cookies, no analytics, no third-party requests, no console errors.
 9. **Honest about being high-tech.** No costumes of tools: no fake terminals, pipelines or file names, and no coordinates or "est." used as decoration.
-10. **One reveal, then stillness.** The only animation on the whole site is the home reveal (below). Reduced motion gives a static, full-colour, closed mark.
+10. **One reveal, one page change, then stillness.** The site has two motions and no more: the home reveal and the page change (both below). The page change is the owner's decision of 2026-11-07 and amends the earlier "one reveal" rule; nothing else on a page moves. Reduced motion gives a static, full-colour, closed mark and plain page loads.
 11. **Plain words.** Concrete nouns (Kubernetes, PostgreSQL, Rust), short sentences, no hype or AI wording, no client names, no unverified numbers.
 12. **Iconic, few elements.** Navy or aluminium, the mark, Geist. Lime appears only in the logo and the mark; cyan only as a UI accent.
 13. **The whole widget.** English and Latvian, dark and light, print and the 404 page get the same care.
@@ -47,6 +47,16 @@ All of it is in `src/assets/css/site.css`; the comment block at the top of that 
 ### The home reveal
 
 The mark is two chevrons (`.part--c`, `.part--l`). Scrolling through the problem statement moves them apart and takes the colour out (a split of 46 units, brightness `--off`), then closes them and brings the colour back. It is CSS only, driven by a scroll timeline (`animation-timeline: view()`), and only runs when motion is allowed and the browser supports scroll timelines. In every other case the mark is closed and in full colour. `tools/gen_mark.py` generates the mark's markup; the 404 page shows the split, grey state without animation by wrapping the mark in `.apart`.
+
+### The page change
+
+The owner asked for a single-page feel with a 3D animation of the mark when the page changes. They chose (2026-11-07) to keep separate pages with real URLs and to get the feel from the browser's cross-document view transitions, in CSS. After three prototypes (a coin flip, a split and rejoin, an arc), the owner designed the motion: both chevrons spin around the arrow's own pointing axis, in opposite directions, and come back to where they started. It was tuned over several rounds of video.
+
+- The header, with the full logo, stays still; only the current-page underline (or the language) changes. The page content cross-fades in 0.2 s.
+- The mark travels to its place on the next page in 0.7 s. Meanwhile each chevron, on the page being opened, is a closed solid 30 drawing units deep (its face, a side on each edge and a back, in the drawn sides' darker tones). Both spin once around the mark's pointing diagonal, the line through both apexes that is each chevron's axis of symmetry, the lime one way and the cyan the other.
+- Owner's tuning: the chevrons have volume (not flat pictures); no perspective, so their shape and thickness never change while they turn; the shadow stays all the way through and falls naturally; the side band the mark shows at rest is visible all the way through. For the last point the solids are seen from a little above, as the drawing shows them, so at 0 and 360 degrees the real solid covers exactly what the drawn mark does, and there is no jump at either end.
+- Where only one page has the mark (Privacy, inner pages on phones) it fades with the page, or fades in while it spins. The 404's split, grey mark stays out of the motion. A mark that is mostly off screen, a page opened at a section (`services/#development`) and a page restored scrolled by Back or Forward keep the mark out of the motion too (`site.js` names the last two cases; a `#section` needs no JavaScript).
+- Pages at rest do not change: the solids, the shadows and the view-transition name exist only while a page change runs. Browsers without cross-document view transitions (Firefox today), print and reduced motion load the next page as before. The mechanism and every value are documented at the top of `site.css`; the sides' positions come from `python3 tools/gen_mark.py --css`.
 
 ## Inner-page components
 
@@ -81,7 +91,8 @@ Choice made for the hierarchy: the page H1 is at `--t-say` and the `.beat` H2 on
   - "Kam mēs esam atbildīgi" (Company): the section text calls the company "tās dibinātājam" (feminine, as for "sabiedrība") and then "uzņēmumam ... tas" (masculine); check that the mix reads naturally;
   - "Rust un Python pakalpojumi, TypeScript tīmeklim" (home; kept short so the Latvian home still prints on one page);
   - "Mēs apšaubām plānu" and "problēmas vislētāk novērst, pirms kaut kas ir uzbūvēts" (Company, fourth principle) and "Rust pakalpojumiem un sistēmprogrammatūrai" (Services): "pakalpojumi" for software services.
-- **Safari was not tested** (no WebKit on the build machine). Its fail-safe path is verified: without `animation-timeline` support the mark is static and in full colour.
+- **Safari was not tested** (no WebKit on the build machine). Its fail-safe path is verified: without `animation-timeline` support the mark is static and in full colour. The page change was checked in Chrome only; Safari 18.2 and later support cross-document view transitions, but the 3D solids, container units in the motion and the view-transition types are untested there. Without them the page still changes, with less motion.
+- **Clicks during a page change.** For its 0.7 s, Chrome sends clicks to the transition, not to the links of the page underneath.
 - **Phones held sideways** (844 by 390) use the pinned stage; the page there is long and the Latvian H1 is 1.27 times the statement size, just under the 1.3 aim.
 - **The Latvian mark** is about a quarter smaller than the English one on landscape screens (the cost of the 2 : 1 split that keeps each H1 sentence on one line).
 
@@ -92,3 +103,4 @@ Choice made for the hierarchy: the page H1 is at `--t-say` and the `.beat` H2 on
 - The site names services in both Rust and Python, and TypeScript for web front ends. JavaScript, Node.js, AWS CDK and CloudFormation are not named, in any version (v1, v2 and v3). The home Build column now reads "Software development: services in Rust and Python, web front ends in TypeScript."
 - The Company page has a section "Who we answer to" (LV "Kam mēs esam atbildīgi", `#independence`) between "Our principle" and "Company details", in all three versions: the company is owned by its founder alone, with no investors, subsidies or grants, loans or parent group. The owner confirmed each fact; the text claims nothing about how the company is funded beyond them.
 - "Our principle" on the Company page has a fourth item, "We question the plan" (LV "Mēs apšaubām plānu"), in all three versions: we ask awkward questions early, and when a plan looks risky or wrong we say so directly, explain why and propose an alternative. The owner chose the Company principle over a paragraph in the Services engagement section. Four parts fill the two-column grid two by two. The v1 and v2 home pages list it as well, under "Quality, in practice"; the v3 home has no principle list.
+- v3 stays a set of separate pages. Instead of a single-page site, a page change animates the mark: the two chevrons spin as solids around their pointing axis, in opposite directions (see "The page change" above, and principle 10).
