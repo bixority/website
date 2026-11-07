@@ -8,7 +8,7 @@ terraform {
     }
     external = {
       source  = "hashicorp/external"
-      version = "~> 2.3"
+      version = "~> 2.4"
     }
     # Generic REST client for the domainname.shop (Domeneshop) API. The only
     # dedicated provider stopped at 0.1.0 in 2021.

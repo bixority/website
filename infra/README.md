@@ -12,7 +12,7 @@ through CloudFront at `https://www.bixority.com`. DNS stays at domainname.shop
 | `storage.tf`    | The bucket `bixority-website-<account>` in eu-north-1: private, readable only by this distribution, TLS only |
 | `cdn.tf`        | The certificate for www (ACM, us-east-1, ECDSA P-256); the distribution; the viewer-request function; the security headers |
 | `dns.tf`        | At domainname.shop: `www` CNAME to CloudFront, the certificate's validation CNAME, and a forward of the bare domain to `https://www.bixority.com/` |
-| `bootstrap/`    | The state bucket `bixority-tfstate-<account>`, created once |
+| `bootstrap/`    | Created once: the state bucket `bixority-tfstate-<account>`, the GitHub OIDC provider and the CI role `bixority-website-ci` (`github.tf`) |
 
 Which version is deployed is set by the variable `site_version`: the name of its folder at the top
 of the repository (`v1`, `v2` or `v3`; the default is `v3`), for example
@@ -50,7 +50,8 @@ Permissions-Policy. No access logs are written.
 
 - Terraform 1.17 or newer, and Python 3.10 or newer for the build.
 - The AWS profile `bx`, with the permissions in `deployer-policy.json`
-  (S3 on the two buckets, CloudFront, and ACM in us-east-1). Set
+  (S3 on the two buckets, CloudFront, and ACM in us-east-1). Creating the CI
+  role in `bootstrap/` needs more: IAM roles and OIDC providers. Set
   `aws_profile = null` to use the standard AWS environment variables instead.
 - A domainname.shop API token and secret, created at
   <https://www.domeneshop.no/admin?view=api>, in the environment:
@@ -61,19 +62,136 @@ Permissions-Policy. No access logs are written.
   ```
 
   These variables are ephemeral: Terraform does not write them to the state or
-  to a saved plan.
+  to a saved plan. In CI they come from GitHub secrets (see below).
+
+## Continuous integration
+
+The workflow `.github/workflows/ci.yaml` has three jobs.
+
+- **check** runs on pull requests, pushes to `main` and manual runs. It builds `v1`,
+  `v2` and `v3` with `--strict`, runs `node --test 'infra/functions/*.test.mjs'`, checks
+  `terraform fmt`, and runs `terraform init -backend=false -lockfile=readonly`
+  and `terraform validate` in `infra/` and `infra/bootstrap/`. It needs no secrets.
+- **plan** runs after `check` on pull requests from this repository, on
+  pushes to `main` and on manual runs on `main`. It runs `terraform plan` against the real state and writes
+  the plan to the job summary, so it can be read before anything is approved.
+  Pull requests from forks are skipped (no secrets, no OIDC token). Dependabot
+  pull requests are skipped by an explicit actor check, which must stay: Dependabot
+  runs may raise the token's permissions, so without it a Dependabot pull request could get an
+  OIDC token for the deploy role. A manual run on another branch is skipped too: the
+  AWS role does not trust that branch. A Dependabot change is planned on `main` after it is
+  merged, before the apply is approved. The plan file is not uploaded anywhere.
+- **apply** runs only on `main` (a push, or a manual run of the workflow on
+  `main`), after `plan`, and only once the owner approves it in the GitHub
+  environment `production`. It plans again, shows the plan, and applies that
+  saved plan.
+
+A newer push to a pull request cancels that pull request's older plan. A plan
+on `main` or an apply that has started is never cancelled; one that is still
+waiting is replaced by the newer run. Pull request plans run with `-lock=false`
+(a plan never writes state, and a cancelled step would leave the lock behind).
+Plans on `main` wait up to 30 minutes for the state lock, the apply up to 10:
+its AWS credentials last an hour and are not refreshed, so the apply job is
+limited to 55 minutes. If a plan
+still fails with "Error acquiring the state lock" while an apply runs, re-run it.
+
+**Secrets.** Add these as repository secrets (Settings, Secrets and variables,
+Actions):
+
+| Secret              | Value |
+|---------------------|-------|
+| `DOMENESHOP_TOKEN`  | domainname.shop API token |
+| `DOMENESHOP_SECRET` | domainname.shop API secret |
+
+The workflow passes them as `TF_VAR_domeneshop_token` and
+`TF_VAR_domeneshop_secret`. The Domeneshop token cannot be scoped down.
+There are no AWS secrets in GitHub.
+
+**AWS access.** The plan and apply jobs get AWS credentials through GitHub OIDC.
+`aws-actions/configure-aws-credentials` exchanges the job's OIDC token for the
+role `bixority-website-ci` and writes the credentials to the profile `bx` on the
+runner, which is what the backend and the providers read. The credentials last
+at most an hour, and nothing is stored in GitHub.
+
+- The role trusts only tokens from `bixority/website` with one of three
+  subjects, and no others. New repositories use immutable subjects that carry the
+  owner and repository IDs (`<prefix>` below is
+  `repo:bixority@333506/website@<repository ID>`): `<prefix>:pull_request`
+  (plans of pull requests from this repository), `<prefix>:ref:refs/heads/main`
+  (plans on `main`) and `<prefix>:environment:production` (the apply job, after
+  approval). Name-only subjects are not trusted. Check the prefix with
+  `gh api repos/bixority/website/actions/oidc/customization/sub --jq .sub_claim_prefix`.
+- The role has the permissions in `deployer-policy.json`, as an inline policy.
+- `infra/bootstrap` creates the OIDC provider and the role (`github.tf`). Apply
+  bootstrap again, once, with credentials that may create IAM roles and OIDC
+  providers; the deployer policy cannot:
+
+  ```bash
+  id=$(gh api repos/bixority/website --jq .id)   # or "id" from https://api.github.com/repos/bixority/website
+  terraform -chdir=infra/bootstrap apply -var aws_profile=<admin profile> -var github_repository_id=$id
+  ```
+
+  An account can hold only one OIDC provider per URL. If it already has one for
+  GitHub, import it before the apply:
+
+  ```bash
+  terraform -chdir=infra/bootstrap import -var aws_profile=<admin profile> -var github_repository_id=$id \
+    aws_iam_openid_connect_provider.github arn:aws:iam::<account ID>:oidc-provider/token.actions.githubusercontent.com
+  ```
+
+- The role ARN is set once, as `AWS_ROLE_ARN` in `ci.yaml`.
+
+**One role, one trust boundary.** There is a single role, so pull request plans
+get the same deploy-capable credentials as the apply job. The approval gates
+only this workflow's apply job. Anyone with write access to the repository can
+run code with these credentials before any approval, from a pull request plan
+(which runs `infra/build_site.py` and the `vN/build.py` scripts) or from a
+workflow on `main`. Keep write access to the owner only.
+
+The repository is public. Pull requests from forks get no secrets and no OIDC
+token, so their plan is skipped. GitHub asks for approval before it runs
+workflows from first-time outside contributors (the default setting; keep it).
+
+A possible later step: two roles. A read-only plan role (read access, plus write
+access to the state lockfile) trusted for `pull_request` and `main`, and the
+deploy role trusted only for `environment:production`. Pull request code would
+then never hold deploy permissions.
+
+**The `production` environment.** Create it under Settings, Environments, and
+add the owner as a required reviewer. The apply job names this environment and
+waits for the approval; without protection rules it runs without waiting.
+Required reviewers are available on every GitHub plan, including Free, because
+the repository is public. Under Deployment branches and tags, allow only `main`.
+
+**Setup order.** GitHub creates a missing environment without protection rules
+when a workflow first names it, so configure it before anything can reach apply:
+1. Create the repository `bixority/website`, and the `production`
+   environment with the required reviewer and `main` as the only branch.
+2. Add the secrets `DOMENESHOP_TOKEN` and `DOMENESHOP_SECRET`.
+3. Apply bootstrap (the role), with the repository ID as above.
+4. Push the workflow to `main`.
+
+**Versions.** The Terraform version used by CI is set once, in `ci.yaml`
+(`TERRAFORM_VERSION`). Raise it by hand; Dependabot does not. Dependabot
+updates the providers (and their lock files) in `infra/` and `infra/bootstrap/`
+and the pinned actions, weekly.
 
 ## First deployment
 
-1. **Create the state bucket.**
+1. **Create the state bucket, the GitHub OIDC provider and the CI role.**
+   Create the GitHub repository first (see "Setup order"); its ID goes into the
+   subjects the role trusts.
 
    ```bash
    terraform -chdir=infra/bootstrap init
-   terraform -chdir=infra/bootstrap apply
+   terraform -chdir=infra/bootstrap apply -var aws_profile=<admin profile> \
+     -var github_repository_id=$(gh api repos/bixority/website --jq .id)
    ```
 
    Its state stays in `infra/bootstrap/terraform.tfstate`, which is not
-   committed. The bucket is protected from `terraform destroy`.
+   committed. The bucket is protected from `terraform destroy`. The apply needs
+   a profile that may create IAM roles and OIDC providers (see "AWS access"
+   above for the import of an existing provider).
 
 2. **Remove the parking records.** Before the first deployment, `@` and `www`
    answered with domainname.shop's parking server (185.134.245.113 and
@@ -117,5 +235,5 @@ check the build.
 ## Tests
 
 ```bash
-node --test infra/functions/        # the viewer-request function
+node --test 'infra/functions/*.test.mjs'  # the viewer-request function
 ```

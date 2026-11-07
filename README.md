@@ -22,5 +22,9 @@ The same works for `v1` and `v2`. Python 3.10 or newer; no packages to
 install. Each version's `README.md` explains its layout, and its `docs/` holds
 the content brief and the design notes.
 
+GitHub Actions (`.github/workflows/ci.yaml`) builds all three versions, tests
+the CloudFront function and plans the Terraform changes. Applying them needs the
+owner's approval; see [infra/README.md](infra/README.md#continuous-integration).
+
 The commits each version was first made in are kept as the tags `v1`, `v2` and
 `v3`, and the first hosting commit as `infra`.

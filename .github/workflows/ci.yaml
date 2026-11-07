@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  # The one place the CI Terraform version is set. Raise it by hand; Dependabot does not.
+  TERRAFORM_VERSION: 1.17.1
+  # Created by infra/bootstrap (github.tf). Its trust policy names the subjects allowed below.
+  AWS_ROLE_ARN: arn:aws:iam::<account ID>:role/bixority-website-ci
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: Build the three versions
+        run: |
+          for v in v1 v2 v3; do
+            python3 "$v/build.py" --strict
+          done
+      - name: Test the viewer-request function
+        run: node --test 'infra/functions/*.test.mjs'
+      - name: Terraform format
+        run: terraform fmt -check -recursive infra
+      - name: Terraform validate
+        # -backend=false: no AWS access needed. The lock file must already be complete.
+        run: |
+          for dir in infra infra/bootstrap; do
+            terraform -chdir="$dir" init -backend=false -lockfile=readonly
+            terraform -chdir="$dir" validate
+          done
+
+  plan:
+    needs: check
+    # Skipped: PRs from forks (no secrets, no OIDC token) and from Dependabot, and runs the
+    # role does not trust (only pull_request and refs/heads/main tokens can assume it).
+    # Keep the actor check: Dependabot runs may raise the token's permissions with the
+    # permissions key, so without it a Dependabot PR could get an OIDC token for the
+    # deploy-capable role. The head.repo check is the matching guard for forks.
+    if: >-
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]') ||
+      (github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    # A newer push to the same PR cancels its older plan. PR plans take no state lock
+    # (-lock=false below), because a cancelled step kills terraform without unlocking.
+    # A plan on main that has started is not cancelled; it waits for a running apply.
+    concurrency:
+      group: plan-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    env:
+      TF_VAR_domeneshop_token: ${{ secrets.DOMENESHOP_TOKEN }}
+      TF_VAR_domeneshop_secret: ${{ secrets.DOMENESHOP_SECRET }}
+      PLAN_LOCK: ${{ github.event_name == 'pull_request' && 'false' || 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: Configure AWS credentials
+        # GitHub OIDC; nothing is stored. The action writes the profile "bx", which the
+        # backend and the providers read, to ~/.aws and does not export env variables.
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: eu-north-1
+          aws-profile: bx
+          role-session-name: website-plan-${{ github.run_id }}-${{ github.run_attempt }}
+          role-duration-seconds: 3600
+          allowed-account-ids: "<account ID>"
+      - name: Terraform init
+        run: terraform -chdir=infra init -lockfile=readonly
+      - name: Terraform plan
+        run: terraform -chdir=infra plan -lock="$PLAN_LOCK" -lock-timeout=30m -out="$RUNNER_TEMP/tfplan"
+      - name: Plan summary
+        # Written to a file first, so a failing terraform show fails the step.
+        run: |
+          terraform -chdir=infra show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/plan.txt"
+          {
+            echo "## Terraform plan"
+            echo "<details><summary>Plan</summary>"
+            echo
+            echo '```'
+            head -c 500000 "$RUNNER_TEMP/plan.txt"
+            echo
+            echo '```'
+            if [ "$(wc -c < "$RUNNER_TEMP/plan.txt")" -gt 500000 ]; then
+              echo "(truncated: the full plan is in the log of the \"Terraform plan\" step)"
+            fi
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    needs: plan
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    # The first apply waits for ACM validation and a CloudFront deploy (about 20 minutes).
+    # The AWS credentials last 60 minutes from the configure step and are not refreshed, so
+    # the job (with the lock waits below) must end inside that.
+    timeout-minutes: 55
+    # Waits for the owner's approval in the "production" environment (required reviewer).
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    # An apply that has started is never cancelled: stopping it half-way can leave the state
+    # locked or partial.
+    # (The state also has an S3 lockfile, and plan and apply use -lock-timeout.)
+    concurrency:
+      group: terraform-apply
+      cancel-in-progress: false
+    env:
+      TF_VAR_domeneshop_token: ${{ secrets.DOMENESHOP_TOKEN }}
+      TF_VAR_domeneshop_secret: ${{ secrets.DOMENESHOP_SECRET }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: Configure AWS credentials
+        # GitHub OIDC; nothing is stored. The action writes the profile "bx", which the
+        # backend and the providers read, to ~/.aws and does not export env variables.
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: eu-north-1
+          aws-profile: bx
+          role-session-name: website-apply-${{ github.run_id }}-${{ github.run_attempt }}
+          role-duration-seconds: 3600
+          allowed-account-ids: "<account ID>"
+      - name: Terraform init
+        run: terraform -chdir=infra init -lockfile=readonly
+      - name: Terraform plan
+        # Planned again after approval, so the applied plan matches the state now.
+        run: terraform -chdir=infra plan -lock-timeout=10m -out="$RUNNER_TEMP/tfplan"
+      - name: Show the plan
+        run: terraform -chdir=infra show -no-color "$RUNNER_TEMP/tfplan"
+      - name: Terraform apply
+        # Ephemeral variables must be given again at apply time (TF_VAR_ env above).
+        run: terraform -chdir=infra apply -input=false -lock-timeout=10m "$RUNNER_TEMP/tfplan"
