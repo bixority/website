@@ -15,7 +15,9 @@ env:
   # The one place the CI Terraform version is set. Raise it by hand; Dependabot does not.
   TERRAFORM_VERSION: 1.17.1
   # Created by infra/bootstrap (github.tf). Its trust policy names the subjects allowed below.
-  AWS_ROLE_ARN: arn:aws:iam::<account ID>:role/bixority-website-ci
+  # The account ID is not in the repository: it comes from the secret AWS_ACCOUNT_ID, and
+  # GitHub masks it in logs and job summaries.
+  AWS_ROLE_NAME: bixority-website-ci
 
 jobs:
   check:
@@ -87,14 +89,17 @@ jobs:
         # backend and the providers read, to ~/.aws and does not export env variables.
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE_NAME }}
           aws-region: eu-north-1
           aws-profile: bx
           role-session-name: website-plan-${{ github.run_id }}-${{ github.run_attempt }}
           role-duration-seconds: 3600
-          allowed-account-ids: "<account ID>"
+          allowed-account-ids: ${{ secrets.AWS_ACCOUNT_ID }}
       - name: Terraform init
-        run: terraform -chdir=infra init -lockfile=readonly
+        # The state bucket's name carries the account ID, so it is given here (see versions.tf).
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: terraform -chdir=infra init -lockfile=readonly -backend-config="bucket=bixority-tfstate-${AWS_ACCOUNT_ID}"
       - name: Terraform plan
         run: terraform -chdir=infra plan -lock="$PLAN_LOCK" -lock-timeout=30m -out="$RUNNER_TEMP/tfplan"
       - name: Plan summary
@@ -152,14 +157,17 @@ jobs:
         # backend and the providers read, to ~/.aws and does not export env variables.
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE_NAME }}
           aws-region: eu-north-1
           aws-profile: bx
           role-session-name: website-apply-${{ github.run_id }}-${{ github.run_attempt }}
           role-duration-seconds: 3600
-          allowed-account-ids: "<account ID>"
+          allowed-account-ids: ${{ secrets.AWS_ACCOUNT_ID }}
       - name: Terraform init
-        run: terraform -chdir=infra init -lockfile=readonly
+        # The state bucket's name carries the account ID, so it is given here (see versions.tf).
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: terraform -chdir=infra init -lockfile=readonly -backend-config="bucket=bixority-tfstate-${AWS_ACCOUNT_ID}"
       - name: Terraform plan
         # Planned again after approval, so the applied plan matches the state now.
         run: terraform -chdir=infra plan -lock-timeout=10m -out="$RUNNER_TEMP/tfplan"

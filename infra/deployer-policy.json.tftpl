@@ -6,10 +6,10 @@
       "Effect": "Allow",
       "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::bixority-website-<account ID>",
-        "arn:aws:s3:::bixority-website-<account ID>/*",
-        "arn:aws:s3:::bixority-tfstate-<account ID>",
-        "arn:aws:s3:::bixority-tfstate-<account ID>/*"
+        "arn:aws:s3:::bixority-website-${account_id}",
+        "arn:aws:s3:::bixority-website-${account_id}/*",
+        "arn:aws:s3:::bixority-tfstate-${account_id}",
+        "arn:aws:s3:::bixority-tfstate-${account_id}/*"
       ]
     },
     {

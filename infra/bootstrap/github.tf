@@ -85,14 +85,27 @@ resource "aws_iam_role" "ci" {
   max_session_duration = 3600
 }
 
-# The permissions live in one file, shared with the manual deployer setup.
+# The deployer permissions live in one template, shared with the manual deployer
+# setup. The account ID is filled in from the account this runs in, so it is not
+# written in the repository.
+locals {
+  deployer_policy = templatefile("${path.module}/../deployer-policy.json.tftpl", {
+    account_id = data.aws_caller_identity.current.account_id
+  })
+}
+
 resource "aws_iam_role_policy" "ci" {
   name   = "deployer"
   role   = aws_iam_role.ci.id
-  policy = file("${path.module}/../deployer-policy.json")
+  policy = local.deployer_policy
 }
 
 output "ci_role_arn" {
-  description = "Role ARN for role-to-assume in .github/workflows/ci.yaml."
+  description = "ARN of the CI role. ci.yaml builds it from the AWS_ACCOUNT_ID secret and the role name."
   value       = aws_iam_role.ci.arn
+}
+
+output "deployer_policy" {
+  description = "The deployer policy with this account's ID, for attaching it to a person's IAM user by hand."
+  value       = local.deployer_policy
 }

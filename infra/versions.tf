@@ -18,10 +18,11 @@ terraform {
     }
   }
 
-  # The bucket is created once by bootstrap/. A backend block cannot use
-  # variables, so the account ID is written out here.
+  # The bucket, bixority-tfstate-<account ID>, is created once by bootstrap/.
+  # Its name carries the account ID, which is kept out of the repository, and a
+  # backend block cannot use variables, so it is given at init:
+  #   terraform -chdir=infra init -backend-config=bucket=bixority-tfstate-<account ID>
   backend "s3" {
-    bucket       = "bixority-tfstate-<account ID>"
     key          = "website/terraform.tfstate"
     region       = "eu-north-1"
     profile      = "bx"

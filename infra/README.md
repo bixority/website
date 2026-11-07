@@ -49,8 +49,10 @@ Permissions-Policy. No access logs are written.
 ## Requirements
 
 - Terraform 1.17 or newer, and Python 3.10 or newer for the build.
-- The AWS profile `bx`, with the permissions in `deployer-policy.json`
-  (S3 on the two buckets, CloudFront, and ACM in us-east-1). Creating the CI
+- The AWS profile `bx`, with the permissions in `deployer-policy.json.tftpl`
+  (S3 on the two buckets, CloudFront, and ACM in us-east-1). The template takes
+  the account ID; after the bootstrap apply,
+  `terraform -chdir=infra/bootstrap output -raw deployer_policy` prints it filled in. Creating the CI
   role in `bootstrap/` needs more: IAM roles and OIDC providers. Set
   `aws_profile = null` to use the standard AWS environment variables instead.
 - A domainname.shop API token and secret, created at
@@ -100,12 +102,16 @@ Actions):
 
 | Secret              | Value |
 |---------------------|-------|
+| `AWS_ACCOUNT_ID`    | The 12-digit AWS account ID |
 | `DOMENESHOP_TOKEN`  | domainname.shop API token |
 | `DOMENESHOP_SECRET` | domainname.shop API secret |
 
 The workflow passes them as `TF_VAR_domeneshop_token` and
 `TF_VAR_domeneshop_secret`. The Domeneshop token cannot be scoped down.
-There are no AWS secrets in GitHub.
+There are no AWS keys in GitHub. The account ID is not a credential, but it is
+kept out of the public repository: the workflow builds the role ARN and the
+state bucket's name from the secret, and GitHub masks it in logs and job
+summaries.
 
 **AWS access.** The plan and apply jobs get AWS credentials through GitHub OIDC.
 `aws-actions/configure-aws-credentials` exchanges the job's OIDC token for the
@@ -121,7 +127,8 @@ at most an hour, and nothing is stored in GitHub.
   (plans on `main`) and `<prefix>:environment:production` (the apply job, after
   approval). Name-only subjects are not trusted. Check the prefix with
   `gh api repos/bixority/website/actions/oidc/customization/sub --jq .sub_claim_prefix`.
-- The role has the permissions in `deployer-policy.json`, as an inline policy.
+- The role has the permissions in `deployer-policy.json.tftpl`, filled in with
+  the account ID by the bootstrap, as an inline policy.
 - `infra/bootstrap` creates the OIDC provider and the role (`github.tf`). Apply
   bootstrap again, once, with credentials that may create IAM roles and OIDC
   providers; the deployer policy cannot:
@@ -139,7 +146,8 @@ at most an hour, and nothing is stored in GitHub.
     aws_iam_openid_connect_provider.github arn:aws:iam::<account ID>:oidc-provider/token.actions.githubusercontent.com
   ```
 
-- The role ARN is set once, as `AWS_ROLE_ARN` in `ci.yaml`.
+- `ci.yaml` builds the role ARN from the secret `AWS_ACCOUNT_ID` and the role
+  name, set once as `AWS_ROLE_NAME`.
 
 **One role, one trust boundary.** There is a single role, so pull request plans
 get the same deploy-capable credentials as the apply job. The approval gates
@@ -167,7 +175,7 @@ the repository is public. Under Deployment branches and tags, allow only `main`.
 when a workflow first names it, so configure it before anything can reach apply:
 1. Create the repository `bixority/website`, and the `production`
    environment with the required reviewer and `main` as the only branch.
-2. Add the secrets `DOMENESHOP_TOKEN` and `DOMENESHOP_SECRET`.
+2. Add the secrets `AWS_ACCOUNT_ID`, `DOMENESHOP_TOKEN` and `DOMENESHOP_SECRET`.
 3. Apply bootstrap (the role), with the repository ID as above.
 4. Push the workflow to `main`.
 
@@ -212,10 +220,13 @@ and the pinned actions, weekly.
    Leave every other record alone: MX, TXT (SPF, Proton verification,
    DMARC) and the `_domainkey` CNAMEs are the mail setup.
 
-3. **Deploy.**
+3. **Deploy.** The state bucket's name carries the account ID, which is not
+   in the repository, so `init` is given it once (Terraform keeps it in
+   `infra/.terraform/`):
 
    ```bash
-   terraform -chdir=infra init
+   account=$(aws sts get-caller-identity --profile bx --query Account --output text)
+   terraform -chdir=infra init -backend-config="bucket=bixority-tfstate-$account"
    terraform -chdir=infra apply
    ```
 
