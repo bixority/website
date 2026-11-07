@@ -65,7 +65,7 @@ Alternative H1s:
   certifications we do not hold, or AI and hype wording ("cutting-edge",
   "world-class", "passionate", "AI-powered", "synergy").
 - **No people section yet.** Use "we" for the team.
-- **Contact:** email only, olegs.korsaks@bixority.com. No phone number.
+- **Contact:** email only, info@bixority.com. No phone number.
 
 ## 4. Sitemap
 
@@ -137,7 +137,7 @@ its counterpart in the other language.
 - **Performance.** No frameworks, images as SVG where possible, and a small
   payload per page so it loads fast on mobile.
 - **Languages.** Each language has its own page; nothing is translated by JS.
-  Claude drafts the Latvian copy, and a native speaker reviews it before launch.
+  The Latvian copy is drafted first and reviewed by a native speaker before launch.
 - **Deployment** to S3 and CloudFront, and its infrastructure as code, is a
   later phase.
 

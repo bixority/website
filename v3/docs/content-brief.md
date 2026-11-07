@@ -137,7 +137,7 @@ its counterpart in the other language.
 - **Performance.** No frameworks, images as SVG where possible, and a small
   payload per page so it loads fast on mobile.
 - **Languages.** Each language has its own page; nothing is translated by JS.
-  Claude drafts the Latvian copy, and a native speaker reviews it before launch.
+  The Latvian copy is drafted first and reviewed by a native speaker before launch.
 - **Deployment** to S3 and CloudFront, and its infrastructure as code, is a
   later phase.
 
