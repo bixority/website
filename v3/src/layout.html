@@ -28,10 +28,12 @@
   <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ css }}">
-  <script src="{{ js }}" defer></script>
 {{ jsonld }}
 </head>
 <body>
+  <svg class="mark-defs" width="0" height="0" aria-hidden="true" focusable="false">
+{{ partial_mark-defs }}
+  </svg>
   <a class="skip" href="#content">{{ skip }}</a>
 
   <header class="hd wrap">

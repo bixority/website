@@ -81,7 +81,7 @@ def fingerprinted(data, stem, suffix):
 
 
 def build_assets(dist):
-    """Copy static assets; bundle and fingerprint CSS and JS. Returns their URLs."""
+    """Copy static assets; bundle and fingerprint the CSS. Returns its URL."""
     assets = dist / "assets"
     shutil.copytree(SRC / "assets" / "img", assets / "img")
     fonts = assets / "fonts"
@@ -100,10 +100,7 @@ def build_assets(dist):
     css_name = fingerprinted(css, "site", ".css")
     (assets / css_name).write_bytes(css)
 
-    js = (SRC / "assets" / "js" / "site.js").read_bytes()
-    js_name = fingerprinted(js, "site", ".js")
-    (assets / js_name).write_bytes(js)
-    return f"/assets/{css_name}", f"/assets/{js_name}"
+    return f"/assets/{css_name}"
 
 
 def org_jsonld(site):
@@ -165,12 +162,16 @@ def main(argv=None):
         # dist/ is always ours to replace; other outputs carry a marker, and dist/ is
         # what gets deployed, so the marker never ships with the site
         (dist / BUILD_MARKER).write_text("Output of build.py; it may be deleted and rebuilt.\n", encoding="utf-8")
-    css_url, js_url = build_assets(dist)
+    css_url = build_assets(dist)
 
     def url_of(lang, key):
         if key == "404":
             return f"{lang['prefix']}/404.html"
         return lang["prefix"] + site["pages"][key]
+
+    def frag_of(lang, key):
+        """Root-relative address of a page's section: '/#services', '/lv/#services'; Home is '/' or '/lv/'."""
+        return lang["prefix"] + "/" + ("" if key == "index" else f"#{key}")
 
     # Which pages exist in which language.
     pages = {}
@@ -180,99 +181,181 @@ def main(argv=None):
             if key != "404" and key not in site["pages"]:
                 fail(f"{path}: page '{key}' is not listed in site.json")
             pages.setdefault(key, {})[lang["code"]] = path
+    order = [k for k in site["pages"] if k in pages]  # the order of the sections in a document
+    if "index" not in pages:
+        fail("there is no index page")
 
-    sitemap = []
-    for key, by_lang in pages.items():
-        for lang in langs:
-            if lang["code"] not in by_lang:
+    c = site["company"]
+
+    def make_ctx(lang, meta, here, link):
+        """The placeholders of one language; link(page_key) gives the address of a page."""
+        t = strings[lang["code"]]
+        others = [lg for lg in langs if lg is not lang]
+        ctx = {
+            "lang": lang["code"],
+            "title": meta["title"],
+            "description": meta["description"],
+            "robots": '  <meta name="robots" content="noindex">' if meta.get("robots") == "noindex" else "",
+            "canonical": base + here,
+            "og_locale": lang["locale"],
+            "og_locale_alt": ", ".join(lg["locale"] for lg in others),
+            "base_url": base,
+            "css": css_url,
+            "skip": t["skip"],
+            "home_url": link("index"),
+            "home_link": t["home_link"],
+            "nav_label": t["nav_label"],
+            "privacy_url": link("privacy"),
+            "email": site["email"],
+            "legal_name": c["legal_name"],
+            "legal_display": c["legal_display"],
+            "reg_no": c["reg_no"],
+            "vat": c["vat"],
+            "street": c["street"],
+            "street_nbsp": c["street"].replace(" - ", "\u00a0-\u00a0"),
+            "city": c["city"],
+            "postal": c["postal"],
+        }
+        for k, v in t["footer"].items():
+            ctx["f_" + k] = v
+        for k in site["pages"]:
+            ctx["url_" + k.replace("-", "_")] = link(k)
+        for name, text in partials.items():
+            ctx["partial_" + name] = render(text, ctx, f"partials/{name}.html")
+        return ctx
+
+    def nav_html(lang, link, doc):
+        t = strings[lang["code"]]
+        return "\n".join(
+            f'      <li><a{f" class=\"hd__link hd__link--{item}\"" if doc else ""} href="{link(item)}">'
+            f'{html.escape(t["nav"][item])}</a></li>' for item in site["nav"])
+
+    def switch_html(lang, keys, doc):
+        """One word, in the other language: the only language control. In a document there is one link
+        per page (the page that is open shows its own), each to the same page in the other language."""
+        out = []
+        for other in langs:
+            if other is lang:
                 continue
-            t = strings[lang["code"]]
-            meta, body = read_page(by_lang[lang["code"]])
-            here = url_of(lang, key)
-            others = [lg for lg in langs if lg is not lang]
-            siblings = [lg for lg in langs if lg["code"] in by_lang]
+            for key in keys:
+                has = other["code"] in pages.get(key, {})
+                target = frag_of(other, key) if has else frag_of(other, "index")
+                cls = f"hd__lang hd__lang--{key}" if doc else "hd__lang"
+                out.append(f'<a class="{cls}" href="{target}" hreflang="{other["code"]}" lang="{other["code"]}">'
+                           f'{html.escape(other["name"])}</a>')
+        return " ".join(out)
 
-            alternates = []
-            if key != "404":
-                alternates = [f'  <link rel="alternate" hreflang="{lg["code"]}" href="{base}{url_of(lg, key)}">' for lg in siblings]
-                default = langs[0]
-                if default["code"] in by_lang:
-                    alternates.append(f'  <link rel="alternate" hreflang="x-default" href="{base}{url_of(default, key)}">')
+    written = []
+    sitemap = []
+    for lang in langs:
+        code = lang["code"]
+        siblings = [lg for lg in langs if lg["code"] in pages["index"]]
+        # --- the document: every page of this language as a section, in one HTML file ---
+        keys = [k for k in order if code in pages[k]]
+        parsed = {k: read_page(pages[k][code]) for k in keys}
+        home_meta, here = parsed["index"][0], url_of(lang, "index")
 
-            nav = []
-            for item in site["nav"]:
-                href = url_of(lang, item)
-                current = ' aria-current="page"' if item == key else ""
-                nav.append(f'      <li><a href="{href}"{current}>{html.escape(t["nav"][item])}</a></li>')
+        def link(key, lang=lang):
+            return "#" if key == "index" else f"#{key}"
 
-            # One word, in the other language: the only language control.
-            switch = []
-            for other in others:
-                target = url_of(other, key) if other["code"] in by_lang else url_of(other, "index")
-                switch.append(f'<a class="hd__lang" href="{target}" hreflang="{other["code"]}" lang="{other["code"]}">{html.escape(other["name"])}</a>')
+        ctx = make_ctx(lang, home_meta, here, link)
+        # a link to a sub-section of a page ("{{ url_services }}#development") is just the fragment
+        bodies = {}
+        for k in keys:
+            text = render(parsed[k][1], ctx, str(pages[k][code]))
+            bodies[k] = re.sub(r'href="#[\w-]+(#[^"]*)"', r'href="\1"', text)
+        id_pages = {k: set(re.findall(r'(?<![\w-])id="([^"]*)"', b)) for k, b in bodies.items()}
+        shared = {i for i in set().union(*id_pages.values()) if sum(i in ids for ids in id_pages.values()) > 1}
+        sections = []
+        for k in keys:
+            text = bodies[k] if k == "index" else prefix_ids(k, bodies[k], shared)
+            ident = "" if k == "index" else f' id="{k}"'
+            sections.append(f'    <section class="pg pg--{k}"{ident}>\n{text.strip(chr(10))}\n    </section>')
+        default = langs[0]
+        alternates = [f'  <link rel="alternate" hreflang="{lg["code"]}" href="{base}{url_of(lg, "index")}">' for lg in siblings]
+        if default["code"] in pages["index"]:
+            alternates.append(f'  <link rel="alternate" hreflang="x-default" href="{base}{url_of(default, "index")}">')
+        ctx.update({
+            "canonical_link": f'  <link rel="canonical" href="{base}{here}">',
+            "alternates": "\n".join(alternates),
+            "jsonld": org_jsonld(site),
+            "nav": nav_html(lang, link, True),
+            "lang_switch": switch_html(lang, keys, True),
+            "content": "\n".join(sections),
+        })
+        out_path = here.lstrip("/") + "index.html"
+        doc = relativize(render(layout, ctx, "layout.html"), out_path)
+        dups = duplicate_ids(doc)
+        if dups:
+            fail(f"{out_path}: ids that are not unique: {', '.join(dups)}")
+        write(dist / out_path, doc)
+        written.append(out_path)
+        sitemap.append((here, [(lg["code"], url_of(lg, "index")) for lg in siblings]))
 
-            c = site["company"]
-            ctx = {
-                "lang": lang["code"],
-                "title": meta["title"],
-                "description": meta["description"],
-                "robots": '  <meta name="robots" content="noindex">' if meta.get("robots") == "noindex" else "",
-                "canonical": base + here,
-                "canonical_link": "" if key == "404" else f'  <link rel="canonical" href="{base}{here}">',
-                "alternates": "\n".join(alternates),
-                "og_locale": lang["locale"],
-                "og_locale_alt": ", ".join(lg["locale"] for lg in others),
-                "base_url": base,
-                "css": css_url,
-                "js": js_url,
-                "jsonld": org_jsonld(site) if key == "index" else "",
-                "skip": t["skip"],
-                "home_url": url_of(lang, "index"),
-                "home_link": t["home_link"],
-                "nav_label": t["nav_label"],
-                "nav": "\n".join(nav),
-                "lang_switch": " ".join(switch),
-                "privacy_url": url_of(lang, "privacy"),
-                "email": site["email"],
-                "legal_name": c["legal_name"],
-                "legal_display": c["legal_display"],
-                "reg_no": c["reg_no"],
-                "vat": c["vat"],
-                "street": c["street"],
-                "street_nbsp": c["street"].replace(" - ", "\u00a0-\u00a0"),
-                "city": c["city"],
-                "postal": c["postal"],
-            }
-            for k, v in t["footer"].items():
-                ctx["f_" + k] = v
-            for k in site["pages"]:
-                ctx["url_" + k.replace("-", "_")] = url_of(lang, k)
+        # --- the error page: its own file, served at whatever address was missing, so its links stay root-relative ---
+        if code in pages.get("404", {}):
+            meta, body = read_page(pages["404"][code])
+            here404 = url_of(lang, "404")
 
-            for name, text in partials.items():
-                ctx["partial_" + name] = render(text, ctx, f"partials/{name}.html")
-            ctx["content"] = render(body, ctx, str(by_lang[lang["code"]]))
+            def link404(key, lang=lang):
+                return frag_of(lang, key)
+
+            ctx = make_ctx(lang, meta, here404, link404)
+            ctx.update({
+                "canonical_link": "",
+                "alternates": "",
+                "jsonld": "",
+                "nav": nav_html(lang, link404, False),
+                "lang_switch": switch_html(lang, ["index"], False),
+                "content": render(body, ctx, str(pages["404"][code])),
+            })
             out = render(layout, ctx, "layout.html")
-            out_path = here.lstrip("/") + ("index.html" if here.endswith("/") else "")
-            # The 404 page is served at whatever address was missing, so its
-            # links must stay root-relative; every other page gets relative ones.
-            if key != "404":
-                out = relativize(out, out_path)
-            target = dist / out_path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(out, encoding="utf-8")
-            if key != "404":
-                sitemap.append((here, [(lg["code"], url_of(lg, key)) for lg in siblings]))
+            dups = duplicate_ids(out)
+            if dups:
+                fail(f"{here404}: ids that are not unique: {', '.join(dups)}")
+            write(dist / here404.lstrip("/"), out)
+            written.append(here404.lstrip("/"))
 
     write_sitemap(dist, base, sitemap)
     (dist / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}/sitemap.xml\n", encoding="utf-8")
-    broken = check_links(dist)
-    for page, link in broken:
+    problems = check_links(dist) + check_fragments(dist)
+    for page, link in problems:
         print(f"{'error' if strict else 'warning'}: {page} links to missing {link}", file=sys.stderr)
-    if strict and broken:
+    if strict and problems:
         sys.exit(1)
-    count = sum(len(v) for v in pages.values())
     shown = dist.relative_to(ROOT) if dist.is_relative_to(ROOT) else dist
-    print(f"build: {count} pages written to {shown}/")
+    docs = sum(1 for w in written if w.endswith("index.html"))
+    print(f"build: {docs} documents and {len(written) - docs} error page written to {shown}/")
+
+
+def write(path, text):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+ID_ATTR = re.compile(r'(?<![\w-])id="([^"]*)"')
+
+
+def duplicate_ids(page_html):
+    """The ids that occur more than once in a document, in order of first repeat."""
+    seen, dups = set(), []
+    for i in ID_ATTR.findall(page_html):
+        if i in seen and i not in dups:
+            dups.append(i)
+        seen.add(i)
+    return dups
+
+
+def prefix_ids(key, page_html, shared):
+    """Give every id in `shared` the prefix '<key>-', and so also the references to it in this page:
+    aria-labelledby (a list of ids) and href="#id"."""
+    def one(i):
+        return f"{key}-{i}" if i in shared else i
+
+    page_html = ID_ATTR.sub(lambda m: f'id="{one(m.group(1))}"', page_html)
+    page_html = re.sub(r'aria-labelledby="([^"]*)"',
+                       lambda m: 'aria-labelledby="' + " ".join(one(i) for i in m.group(1).split()) + '"', page_html)
+    return re.sub(r'href="#([^"]+)"', lambda m: f'href="#{one(m.group(1))}"', page_html)
 
 
 def write_sitemap(dist, base, entries):
@@ -304,6 +387,18 @@ def check_links(dist):
                 target = target / "index.html"
             if not target.exists() and (page_path, link) not in broken:
                 broken.append((page_path, link))
+    return broken
+
+
+def check_fragments(dist):
+    """Every href="#id" in a document must match an id in that same document; href="#" alone is valid."""
+    broken = []
+    for page in sorted(dist.rglob("*.html")):
+        text = page.read_text(encoding="utf-8")
+        ids = set(ID_ATTR.findall(text))
+        for frag in re.findall(r'href="#([^"]+)"', text):
+            if frag not in ids and (page.relative_to(dist).as_posix(), "#" + frag) not in broken:
+                broken.append((page.relative_to(dist).as_posix(), "#" + frag))
     return broken
 
 

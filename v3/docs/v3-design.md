@@ -79,8 +79,8 @@ Choice made for the hierarchy: the page H1 is at `--t-say` and the `.beat` H2 on
   - "Katra izmaiņa tiek testēta un pārskatīta": "izmaiņa" is singular, "izmaiņas" is the usual plural form;
   - "laidienu inženierija" is a rare term for release engineering;
   - "Kam mēs esam atbildīgi" (Company): the section text calls the company "tās dibinātājam" (feminine, as for "sabiedrība") and then "uzņēmumam ... tas" (masculine); check that the mix reads naturally;
-  - "Rust un Python pakalpojumi, TypeScript tīmeklim" (home; kept short so the Latvian home still prints on one page);
-  - "Mēs apšaubām plānu" and "problēmas vislētāk novērst, pirms kaut kas ir uzbūvēts" (Company, fourth principle) and "Rust pakalpojumiem un sistēmprogrammatūrai" (Services): "pakalpojumi" for software services.
+  - "Rust un Python servisi, TypeScript tīmeklim" (home; kept short so the Latvian home still prints on one page). Software services are "servisi" (owner, 2026-11-10), also "Rust servisiem" and "Python servisiem" on Services; the company's services stay "pakalpojumi";
+  - "Mēs apšaubām plānu" and "problēmas vislētāk novērst, pirms kaut kas ir uzbūvēts" (Company, fourth principle).
 - **Safari was not tested** (no WebKit on the build machine). Its fail-safe path is verified: without `animation-timeline` support the mark is static and in full colour.
 - **Phones held sideways** (844 by 390) use the pinned stage; the page there is long and the Latvian H1 is 1.27 times the statement size, just under the 1.3 aim.
 - **The Latvian mark** is about a quarter smaller than the English one on landscape screens (the cost of the 2 : 1 split that keeps each H1 sentence on one line).

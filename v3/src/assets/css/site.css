@@ -118,6 +118,13 @@
          <p class="intro">From the first design document to maintenance years later, by the same team.</p>
          <div class="parts"> ... </div>
        </section>
+
+   THE DOCUMENT. Each language is one HTML document whose pages are <section class="pg pg--<key>"> in the order
+   index, services, open-source, company, privacy (Home has no id; the others have id="<key>"). Only one .pg is
+   displayed: the one :target points at (also when the target is inside it, as #development is), else Home. The header
+   follows the same selectors: .hd__link--<key> is underlined for the open page, and of the .hd__lang links (one per
+   page, each to the same page in the other language) only the open page's shows. The pages fade in .2 s; nothing
+   else moves on a page change. No script. .mark-defs holds the mark's gradients once per document.
 */
 
 /* ===== role tokens. Default: the stage (brand navy). ===== */
@@ -203,19 +210,42 @@ code { font: inherit; } /* command names stay in the text face; Geist Mono is fo
 .logo__dark  { display: var(--logo-dark); }
 .logo__light { display: var(--logo-light); }
 
+/* ===== THE DOCUMENT: one .pg displayed at a time, chosen by :target (see the note at the top) ===== */
+.pg { display: none; }
+.pg[id] { scroll-margin-top: 100svh; } /* the section's own address: no jump below the header */
+:root:not(:has(.pg[id]:target, .pg[id] :target)) .pg--index { display: block; }
+:root:has(#services:target, #services :target) .pg--services { display: block; }
+:root:has(#open-source:target, #open-source :target) .pg--open-source { display: block; }
+:root:has(#company:target, #company :target) .pg--company { display: block; }
+:root:has(#privacy:target, #privacy :target) .pg--privacy { display: block; }
+/* one language link per page; only the open page's shows (the 404 page's single link has no --key class) */
+.hd__lang[class*="hd__lang--"] { display: none; }
+:root:not(:has(.pg[id]:target, .pg[id] :target)) .hd__lang--index { display: inline; }
+:root:has(#services:target, #services :target) .hd__lang--services { display: inline; }
+:root:has(#open-source:target, #open-source :target) .hd__lang--open-source { display: inline; }
+:root:has(#company:target, #company :target) .hd__lang--company { display: inline; }
+:root:has(#privacy:target, #privacy :target) .hd__lang--privacy { display: inline; }
+@media screen and (prefers-reduced-motion: no-preference) {
+  .pg { transition: opacity .2s; }
+  @starting-style { .pg { opacity: 0; } }
+}
+
 /* header: logo, three links, one language link; not fixed */
 .hd { min-height: var(--hd); display: flex; align-items: center; gap: .25rem 2rem; flex-wrap: wrap; padding-block: .875rem; }
 .hd .logo { margin-right: auto; }
 .hd__nav ul { display: flex; gap: .25rem 1.75rem; flex-wrap: wrap; }
 .hd a:not(.logo) { text-decoration: none; }
-/* the current page: a 2 px accent underline (9.2 : 1 on the navy, 4.9 : 1 on the aluminium) */
-.hd .hd__nav a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: .22em; }
+/* the open page (see THE DOCUMENT): a 2 px accent underline (9.2 : 1 on the navy, 4.9 : 1 on the aluminium) */
+:root:has(#services:target, #services :target) .hd__link--services,
+:root:has(#open-source:target, #open-source :target) .hd__link--open-source,
+:root:has(#company:target, #company :target) .hd__link--company { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: .22em; }
 .hd a:not(.logo):hover { text-decoration: underline; text-decoration-color: var(--accent); }
 
 /* ===== the stage: cover, problem, principle, with the mark beside them ===== */
 .stage { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: var(--gutter); --split: 46px; }
 .stage__fig { grid-column: 2; grid-row: 1; display: grid; place-items: center; }
 .mark { height: var(--mark-h); width: auto; max-width: 100%; overflow: visible; }
+.mark-defs { position: absolute; width: 0; height: 0; overflow: hidden; } /* the shared gradients and filter: painted, never display: none */
 .scene { grid-column: 1; container-type: inline-size; }
 .scene--cover { grid-row: 1; min-height: calc(100svh - var(--hd)); display: flex; flex-direction: column; justify-content: center; gap: clamp(1.75rem, 4.5vh, 2.75rem); padding-block: 2rem; }
 .scene--problem, .scene--principle { grid-row: 2; padding-block: clamp(2rem, 8vh, 5rem); }
