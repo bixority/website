@@ -1,0 +1,46 @@
+{
+  "base_url": "https://www.bixority.com",
+  "brand": "Bixority",
+  "email": "info@bixority.com",
+  "founded": "2010-10-20",
+  "company": {
+    "legal_name": "SIA \"Bixority\"",
+    "legal_display": "SIA \u201cBixority\u201d",
+    "reg_no": "40103335376",
+    "vat": "LV40103335376",
+    "street": "Ropažu iela 14A - 27",
+    "city": "Rīga",
+    "postal": "LV-1039",
+    "country_code": "LV"
+  },
+  "profiles": [
+    "https://github.com/bixority",
+    "https://codeberg.org/bixority"
+  ],
+  "languages": [
+    {
+      "code": "en",
+      "prefix": "",
+      "locale": "en_US",
+      "name": "English"
+    },
+    {
+      "code": "lv",
+      "prefix": "/lv",
+      "locale": "lv_LV",
+      "name": "Latviski"
+    }
+  ],
+  "pages": {
+    "index": "/",
+    "services": "/services/",
+    "open-source": "/open-source/",
+    "company": "/company/",
+    "privacy": "/privacy/"
+  },
+  "nav": [
+    "services",
+    "open-source",
+    "company"
+  ]
+}

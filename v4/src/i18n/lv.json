@@ -1,0 +1,17 @@
+{
+  "skip": "Pāriet uz saturu",
+  "home_link": "Bixority sākumlapa",
+  "nav_label": "Galvenā navigācija",
+  "nav": {
+    "services": "Pakalpojumi",
+    "open-source": "Atvērtais kods",
+    "company": "Uzņēmums"
+  },
+  "footer": {
+    "ask": "Rakstiet mums.",
+    "reg_no": "Reģ. Nr.",
+    "vat": "PVN Nr.",
+    "country": "Latvija",
+    "privacy": "Privātuma paziņojums"
+  }
+}

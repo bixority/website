@@ -1,6 +1,6 @@
 # Hosting: S3, CloudFront and domainname.shop
 
-Terraform builds one version of the site (`v3` by default), uploads it to a private S3 bucket and serves it
+Terraform builds one version of the site (`v4` by default), uploads it to a private S3 bucket and serves it
 through CloudFront at `https://www.bixority.com`. DNS stays at domainname.shop
 (Domeneshop), and Terraform manages its records through the Domeneshop API.
 
@@ -15,8 +15,8 @@ through CloudFront at `https://www.bixority.com`. DNS stays at domainname.shop
 | `bootstrap/`    | Created once: the state bucket `bixority-tfstate-<account>`, the GitHub OIDC provider and the CI role `bixority-website-ci` (`github.tf`) |
 
 Which version is deployed is set by the variable `site_version`: the name of its folder at the top
-of the repository (`v1`, `v2` or `v3`; the default is `v3`), for example
-`terraform -chdir=infra apply -var site_version=v3`. The host name comes from `base_url` in that
+of the repository (`v1`, `v2`, `v3` or `v4`; the default is `v4`), for example
+`terraform -chdir=infra apply -var site_version=v4`. The host name comes from `base_url` in that
 version's `src/site.json`.
 
 **Caching.** `site.<hash>.css` and `site.<hash>.js` are kept for a year, because
@@ -71,7 +71,7 @@ Permissions-Policy. No access logs are written.
 The workflow `.github/workflows/ci.yaml` has three jobs.
 
 - **check** runs on pull requests, pushes to `main` and manual runs. It builds `v1`,
-  `v2` and `v3` with `--strict`, runs `node --test 'infra/functions/*.test.mjs'`, checks
+  `v2`, `v3` and `v4` with `--strict`, runs `node --test 'infra/functions/*.test.mjs'`, checks
   `terraform fmt`, and runs `terraform init -backend=false -lockfile=readonly`
   and `terraform validate` in `infra/` and `infra/bootstrap/`. It needs no secrets.
 - **plan** runs after `check` on pull requests from this repository, on
@@ -240,7 +240,7 @@ terraform -chdir=infra apply
 ```
 
 The plan rebuilds the site and lists exactly which files will be uploaded,
-changed or deleted. Run `python3 v3/build.py --strict` first if you only want to
+changed or deleted. Run `python3 v4/build.py --strict` first if you only want to
 check the build.
 
 ## Tests

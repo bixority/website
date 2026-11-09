@@ -1,11 +1,11 @@
 variable "site_version" {
-  description = "The version of the site to build and deploy: its folder at the top of the repository (v1, v2 or v3)."
+  description = "The version of the site to build and deploy: its folder at the top of the repository (v1, v2, v3 or v4)."
   type        = string
-  default     = "v3"
+  default     = "v4"
 
   validation {
     condition     = can(regex("^v[0-9]+$", var.site_version)) && fileexists("${path.module}/../${var.site_version}/build.py")
-    error_message = "site_version must name a version folder with a build.py, such as \"v3\"."
+    error_message = "site_version must name a version folder with a build.py, such as \"v4\"."
   }
 }
 

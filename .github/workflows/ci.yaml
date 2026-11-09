@@ -33,7 +33,7 @@ jobs:
           terraform_wrapper: false
       - name: Build the three versions
         run: |
-          for v in v1 v2 v3; do
+          for v in v1 v2 v3 v4; do
             python3 "$v/build.py" --strict
           done
       - name: Test the viewer-request function
