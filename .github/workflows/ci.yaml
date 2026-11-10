@@ -31,16 +31,11 @@ jobs:
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
-      - name: Build the three versions
-        run: |
-          for v in v1 v2 v3 v4; do
-            python3 "$v/build.py" --strict
-          done
-      - name: Test the v3 and v4 builds
-        # Each version builds itself into a temporary folder and checks the one-document output.
-        run: |
-          python3 -m unittest discover -s v3/tests
-          python3 -m unittest discover -s v4/tests
+      - name: Build the site
+        run: python3 v4/build.py --strict
+      - name: Test the build
+        # The tests build the site into a temporary folder and check the one-document output.
+        run: python3 -m unittest discover -s v4/tests
       - name: Test the viewer-request function
         run: node --test 'infra/functions/*.test.mjs'
       - name: Terraform format

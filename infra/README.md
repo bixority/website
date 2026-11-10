@@ -15,11 +15,11 @@ through CloudFront at `https://www.bixority.com`. DNS stays at domainname.shop
 | `bootstrap/`    | Created once: the state bucket `bixority-tfstate-<account>`, the GitHub OIDC provider and the CI role `bixority-website-ci` (`github.tf`) |
 
 Which version is deployed is set by the variable `site_version`: the name of its folder at the top
-of the repository (`v1`, `v2`, `v3` or `v4`; the default is `v4`), for example
+of the repository (only `v4` is left; it is the default), for example
 `terraform -chdir=infra apply -var site_version=v4`. The host name comes from `base_url` in that
 version's `src/site.json`.
 
-**Caching.** `site.<hash>.css` (and `site.<hash>.js` in v1 and v2) is kept for a year, because
+**Caching.** `site.<hash>.css` is kept for a year, because
 a new version gets a new name. Fonts and images are kept for a week. Pages,
 the sitemap and robots.txt are checked by browsers on every visit, and
 CloudFront keeps them for a day. Every apply that changes a file clears
@@ -27,7 +27,7 @@ CloudFront's copies (an `aws_cloudfront_create_invalidation` action), so the
 new version is live as soon as the apply finishes.
 
 **Addresses.** The function in `functions/viewer-request.js` serves
-a folder address such as `/lv/` (or `/services/` in v1 and v2) from its `index.html`, redirects `/services` to `/services/`,
+a folder address such as `/lv/` from its `index.html`, redirects `/lv` to `/lv/`,
 and redirects any other host name (such as the distribution's own
 `*.cloudfront.net` name) to www. A missing page gets `404.html` with status 404.
 
@@ -70,8 +70,8 @@ Permissions-Policy. No access logs are written.
 
 The workflow `.github/workflows/ci.yaml` has three jobs.
 
-- **check** runs on pull requests, pushes to `main` and manual runs. It builds `v1`,
-  `v2`, `v3` and `v4` with `--strict`, runs `node --test 'infra/functions/*.test.mjs'`, checks
+- **check** runs on pull requests, pushes to `main` and manual runs. It builds `v4`
+  with `--strict`, runs its unit tests, runs `node --test 'infra/functions/*.test.mjs'`, checks
   `terraform fmt`, and runs `terraform init -backend=false -lockfile=readonly`
   and `terraform validate` in `infra/` and `infra/bootstrap/`. It needs no secrets.
 - **plan** runs after `check` on pull requests from this repository, on

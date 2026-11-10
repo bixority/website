@@ -1,5 +1,5 @@
 variable "site_version" {
-  description = "The version of the site to build and deploy: its folder at the top of the repository (v1, v2, v3 or v4)."
+  description = "The version of the site to build and deploy: its folder at the top of the repository (v4)."
   type        = string
   default     = "v4"
 

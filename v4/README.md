@@ -6,7 +6,7 @@ file and no JavaScript, built by a dependency-free Python script.
 The content brief and the decisions behind the site are in
 [docs/content-brief.md](docs/content-brief.md). This is version 4: version 3, "Keynote",
 as one document per language, with the page-change animation of the mark. Its principles, tokens and components are in [docs/v4-design.md](docs/v4-design.md).
-Versions 1 and 2 are kept as the git tags `v1` and `v2`; the research behind
+Versions 1, 2 and 3 are kept as the git tags `v1`, `v2` and `v3`; the research behind
 version 2 is in [docs/v2-research.md](docs/v2-research.md).
 
 ## Build and preview
