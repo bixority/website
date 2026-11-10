@@ -70,7 +70,8 @@
 
    .repos  repositories: spans columns 2-3, two columns from 64rem. The name in Geist Mono as a link (the h3, --t-lead, capped
            to its column from 64rem as .names is, so 26 characters fit), a description, an optional .list, then a meta line
-           (licence first, then links) with a gap, no separators. Put it inside a .beat.
+           (licence first, then links) with a gap, no separators. Put it inside a .beat. One entry may be
+           .featured: from 64rem it takes both columns, its feature list on the right (page-open-source.css).
        <ul class="repos">
          <li>
            <h3><a href="https://github.com/bixority/pg-migrate">pg-migrate</a></h3>
@@ -170,7 +171,7 @@
 
   --gutter: clamp(1rem, 4vw, 4rem);
   --hd: 5.75rem;     /* the 64 px logo with .875rem above and below: room for the focus ring */
-  --mark-h: 66svh;   /* the mark, and the height of the problem and principle beats */
+  --mark-h: 66svh;   /* the mark */
   --sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --mono: "Geist Mono", ui-monospace, monospace;
 }
@@ -279,7 +280,8 @@ code { font: inherit; } /* command names stay in the text face; Geist Mono is fo
 .scene--problem .mute { display: block; } /* the setup, then the consequence on its own line */
 .scene--cover h1 { font-size: min(9.5rem, 20cqi); font-weight: 600; line-height: .98; letter-spacing: -.045em; }
 .scene--cover h1 span { display: block; }
-.scene--cover .lead { text-wrap: balance; } /* no two-word last line under two long ones */
+.scene--cover .lead { max-width: 42ch; text-wrap: balance; } /* no two-word last line under two long ones */
+.lead .line { display: block; } /* a sentence that starts its own line, so no line ends on its first word */
 /* Latvian: each sentence of the H1 keeps to one line ("Mēs to izstrādājam." is 8.54 em), so the cover column
    takes two thirds; that keeps the H1 at least 1.3 times the statement size at every width */
 :lang(lv) .stage { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
@@ -320,12 +322,14 @@ code { font: inherit; } /* command names stay in the text face; Geist Mono is fo
     .mark .body { animation: dim linear both; }
   }
 }
-/* landscape screens from 48rem: the mark is pinned beside the three beats and lets go as the principle centres */
+/* landscape screens from 48rem: the mark is pinned beside the three beats and lets go as the principle centres.
+   The problem and the principle each fill the screen, so one statement is read at a time: the mark is apart while the
+   problem is on screen alone and closes as the principle comes in. */
 @media (prefers-reduced-motion: no-preference) and (min-width: 48rem) and (orientation: landscape) {
   @supports (animation-timeline: view()) and (timeline-scope: --a) {
     .stage { timeline-scope: --problem; }
     .stage__fig { grid-row: 1 / span 3; align-self: start; position: sticky; top: calc(50svh - var(--mark-h) / 2); height: var(--mark-h); }
-    .scene--problem, .scene--principle { grid-column: 1; grid-row: auto; min-height: var(--mark-h); padding-block: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+    .scene--problem, .scene--principle { grid-column: 1; grid-row: auto; min-height: 100svh; padding-block: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
     .scene--problem { view-timeline: --problem block; }
     .part, .mark .body { animation-timeline: --problem; animation-range: cover 0% cover 100%; }
   }
@@ -370,7 +374,7 @@ code { font: inherit; } /* command names stay in the text face; Geist Mono is fo
 
 /* ===== footer: the ask, then the company ===== */
 .ft { padding-block: 0 1.5rem; container-type: inline-size; }
-.ft__ask { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .3em; font-size: min(var(--t-ask), 9.5cqi); font-weight: 600; letter-spacing: -.025em; line-height: 1.1; margin-bottom: 1.5rem; }
+.ft__ask { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .3em; font-size: min(var(--t-ask), 9.5cqi); font-weight: 600; letter-spacing: -.025em; line-height: 1.1; margin-bottom: clamp(2rem, 5vh, 3rem); }
 .ft__ask h2, .ft__ask p { font-size: inherit; font-weight: inherit; }
 .ft__ask a { text-decoration-thickness: 2px; text-underline-offset: .14em; }
 .ft__co { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .75rem var(--gutter); align-items: center;
@@ -435,7 +439,9 @@ address { font-style: normal; }
 .beat > nav + nav { margin-top: .75rem; }
 
 @media (min-width: 48rem) {
-  .beat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto 1fr; column-gap: var(--gutter); align-items: start; }
+  .beat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto 1fr; column-gap: var(--gutter); align-items: baseline; }
+  /* the H2 and the first line of the content beside it (a part, a repository, prose, a list or a fact) share one
+     baseline; the content spans both rows and takes part in the first row's baseline */
   /* the longest H2 word (14 letters) fits the first column down to 48rem, as the home words fit theirs */
   .beat > h2 { font-size: min(var(--t-ask), calc((100cqi - 2 * var(--gutter)) / 24)); grid-column: 1; }
   .beat > .intro { grid-column: 1; }
@@ -639,7 +645,7 @@ address { font-style: normal; }
 /* large statements sit on their cap height and baseline (progressive enhancement) */
 @supports (text-box: trim-both cap alphabetic) {
   h1, .say, .col h3, .ft__ask, .page-head h1 { text-box: trim-both cap alphabetic; }
-  /* the first lines of a beat share one cap line: the H2 beside the first part or repository */
+  /* trimmed so the spacing under the H2 and the part names is measured from the letters */
   .beat > h2, .part h3, .repos h3 { text-box: trim-both cap alphabetic; }
   .beat.beat--legal > h2 { text-box: normal; }
   .part h3 { margin-bottom: .875rem; }

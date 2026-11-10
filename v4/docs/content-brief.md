@@ -70,15 +70,16 @@ Alternative H1s:
 ## 4. Sitemap
 
 English lives at `/` and Latvian mirrors it under `/lv/`. Every page links to
-its counterpart in the other language.
+its counterpart in the other language. Each language is one document: the pages below
+are its sections, addressed by fragment (`/#services`, `/lv/#services`).
 
 | Page        | Path            | Contents |
 |-------------|-----------------|----------|
 | Home        | `/`             | Hero; *What we do* (three cards: DevOps & SRE, software development, open-source tools); *How we work* (design → build → run, and what the client gets at each step); *Principles* (quality, openness, reliability); contact strip with the email |
-| Services    | `/services/`    | **DevOps & SRE:** Kubernetes (on-prem, EKS, AKS, GKE), infrastructure as code, CI/CD and release engineering, observability and incident response, database operations (PostgreSQL migrations, backups, maintenance). **Software development:** architecture, implementation, tests and reviews, delivery, maintenance; services in Rust and Python, web front ends in TypeScript. **How an engagement starts:** email → review of the current state → written proposal |
-| Open source | `/open-source/` | A card for each public repository (name, purpose, licence, GitHub and Codeberg links). object-storage-client is featured and links to its own product page |
-| Company     | `/company/`     | About (founded 2010 in Riga, small senior team, what "because quality matters" means, as four principles: tested and reviewed, open by default, built to recover, and "We question the plan", added by the owner on 2026-11-07: we ask awkward questions early and say plainly when a plan looks risky or wrong, with an alternative); company details (SIA "Bixority", reg. no. 40103335376, VAT LV40103335376, Ropažu iela 14A - 27, Rīga, LV-1039); "Who we answer to" (owned by the founder alone; no investors, subsidies or grants, loans or parent group, confirmed by the owner on 2026-11-07); contact email |
-| Privacy     | `/privacy/`     | Short notice: no cookies, no analytics, no forms. It explains what the hosting logs (CloudFront request logs) and why, names the controller and lists GDPR rights |
+| Services    | `/#services`    | **DevOps & SRE:** Kubernetes (on-prem, EKS, AKS, GKE), infrastructure as code, CI/CD and release engineering, observability and incident response, database operations (PostgreSQL migrations, backups, maintenance). **Software development:** architecture, implementation, tests and reviews, delivery, maintenance; services in Rust and Python, web front ends in TypeScript. **How an engagement starts:** email → review of the current state → written proposal |
+| Open source | `/#open-source` | A card for each public repository (name, purpose, licence, GitHub and Codeberg links). object-storage-client is featured and links to its own product page |
+| Company     | `/#company`     | About (founded 2010 in Riga, small senior team, what "because quality matters" means, as four principles: tested and reviewed, open by default, built to recover, and "We question the plan", added by the owner on 2026-11-07: we ask awkward questions early and say plainly when a plan looks risky or wrong, with an alternative); company details (SIA "Bixority", reg. no. 40103335376, VAT LV40103335376, Ropažu iela 14A - 27, Rīga, LV-1039); "Who we answer to" (owned by the founder alone; no investors, subsidies or grants, loans or parent group, confirmed by the owner on 2026-11-07); contact email |
+| Privacy     | `/#privacy`     | Short notice: no cookies, no analytics, no forms. It explains what the hosting logs (CloudFront request logs) and why, names the controller and lists GDPR rights |
 | Not found   | `/404.html`     | A short message with links to the main pages |
 
 - **Header:** logo, navigation (Services, Open source, Company), EN/LV switch.

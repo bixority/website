@@ -36,6 +36,11 @@ jobs:
           for v in v1 v2 v3 v4; do
             python3 "$v/build.py" --strict
           done
+      - name: Test the v3 and v4 builds
+        # Each version builds itself into a temporary folder and checks the one-document output.
+        run: |
+          python3 -m unittest discover -s v3/tests
+          python3 -m unittest discover -s v4/tests
       - name: Test the viewer-request function
         run: node --test 'infra/functions/*.test.mjs'
       - name: Terraform format

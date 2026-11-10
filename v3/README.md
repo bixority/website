@@ -1,10 +1,10 @@
 # bixority.com
 
 The company website of SIA "Bixority". It is a static site: plain HTML, one CSS
-file and a little JavaScript, built by a dependency-free Python script.
+file and no JavaScript, built by a dependency-free Python script.
 
 The content brief and the decisions behind the site are in
-[docs/content-brief.md](docs/content-brief.md). This is version 3, "Keynote":
+[docs/content-brief.md](docs/content-brief.md). This is version 3, "Keynote", as one document per language:
 its principles, tokens and components are in [docs/v3-design.md](docs/v3-design.md).
 Versions 1 and 2 are kept as the git tags `v1` and `v2`; the research behind
 version 2 is in [docs/v2-research.md](docs/v2-research.md).
@@ -21,11 +21,19 @@ python3 -m http.server 8765 --directory dist   # preview at http://127.0.0.1:876
 Python 3.10 or newer; no packages to install. `dist/` is generated output and
 is not committed.
 
+The output is two documents, `dist/index.html` (English) and `dist/lv/index.html`
+(Latvian), plus `404.html`, `sitemap.xml`, `robots.txt`, `assets/` and `favicon.ico`.
+Each document holds every page of its language as a section: Home, then
+`#services`, `#open-source`, `#company` and `#privacy`. A page address is a
+fragment (`/#services`, `/lv/#company`); there are no per-page files. Changing page
+fades the new section in; nothing else moves.
+
 You can also open `dist/index.html` straight from disk. Internal URLs are
-written relative to each page, and when a page is opened from disk `site.js`
-points directory links (`services/`) at their `index.html`. The 404 page is the
-exception: it keeps root-relative URLs because the server shows it at whatever
-address was missing, so view it through the local server.
+written relative to each document. The language link points at a folder
+(`lv/#services`), and from `file://` a browser shows a folder listing instead of
+`lv/index.html`; on the web server it works. The 404 page keeps root-relative URLs
+because the server shows it at whatever address was missing, so view it through
+the local server.
 
 ## Layout
 
@@ -33,12 +41,13 @@ address was missing, so view it through the local server.
 |------------------------------|---------------|
 | `src/site.json`              | Site address, company details, languages, page addresses, navigation |
 | `src/i18n/{en,lv}.json`      | Text of the shared header and footer, per language |
-| `src/layout.html`            | The page shell every page is rendered into |
-| `src/pages/{en,lv}/*.html`   | One file per page and language: front matter (`title`, `description`, optional `robots: noindex`) then the page body |
-| `src/partials/*.html`        | Sections shared by several pages, included as `{{ partial_<name> }}`; today only `mark.html`, the 3D mark |
-| `tools/gen_mark.py`          | Generates `src/partials/mark.html` (the lit, extruded mark as inline SVG) from the logo's geometry; run `python3 tools/gen_mark.py` after changing the mark |
+| `src/layout.html`            | The shell each document is rendered into: head, header, `<main>`, footer, and the shared mark defs at the top of `<body>` |
+| `src/pages/{en,lv}/*.html`   | One file per page and language: front matter (`title`, `description`, optional `robots: noindex`) then the page body. In a document the body becomes a section; only the home page's `title` and `description` are used |
+| `src/partials/*.html`        | Pieces shared by several pages, included as `{{ partial_<name> }}`: `mark.html` (the 3D mark) and `mark-defs.html` (its gradients, filter and outlines, once per document) |
+| `tools/gen_mark.py`          | Generates `src/partials/mark.html` (the lit, extruded mark as inline SVG) and `src/partials/mark-defs.html` from the logo's geometry; run `python3 tools/gen_mark.py` after changing the mark |
+| `tools/check_pages.py`       | Browser checks of a built `dist/` in Firefox and Chromium (see [Checks](#checks)) |
+| `tests/`                     | Unit tests of the build (`unittest`) |
 | `src/assets/css/*.css`       | `site.css` is the design system (tokens, header, footer, home, inner-page components, print; its top comment documents the components). Add `page-<name>.css` for page-specific rules |
-| `src/assets/js/site.js`      | Progressive enhancement only: on `file://` it points directory links (`services/`) at their `index.html`. Nothing else |
 | `src/assets/fonts/`          | Self-hosted Geist (Latin and Latin Extended) and Geist Mono (Latin) (SIL OFL 1.1) |
 | `src/assets/img/`            | Logos (`logo.svg` for dark grounds, `logo-ink.svg` for light grounds and print), favicons and the share image, generated from `brand/` |
 | `brand/`                     | Logo SVGs and the script that generates them (`brand/source/`) |
@@ -50,24 +59,48 @@ placeholder it does not know, so typos cannot reach the output.
 ### What the build does
 
 - Bundles `fonts.css`, `site.css` and every other `src/assets/css/*.css` (in
-  sorted name order) into one stylesheet, and fingerprints the CSS and JS
-  filenames, so they can be cached for a long time.
-- Renders each page into the layout with its canonical URL, `hreflang` links,
-  Open Graph tags, navigation state and a one-word link to the other language
-  ("Latviski" or "English", with `lang` and `hreflang`).
-- Adds Organization structured data to the home pages.
-- Writes `sitemap.xml` with language alternates, and `robots.txt`.
-- Checks every internal link in the output.
+  sorted name order) into one stylesheet, and fingerprints the CSS
+  filename, so it can be cached for a long time. There is no JavaScript.
+- Renders every page body, then assembles one document per language: each page is a
+  `<section class="pg pg--<key>">` (Home has no `id`; the others have `id="<key>"`), in the
+  order of `pages` in `site.json`. Page links become fragments (`#services`; a link to a
+  sub-section such as `#development` is the fragment alone).
+- An id that occurs on more than one page of a language (`page-title`, `principle`) is
+  prefixed with the page key (`services-page-title`) on the pages other than Home, with the
+  `aria-labelledby` and `href="#…"` references that point at it. The build fails if any id
+  is still repeated in a document.
+- Renders the layout once per language with the home page's title, description, canonical URL,
+  `hreflang` links and Open Graph tags; the header has one language link per page, each to
+  the same page in the other language.
+- Adds Organization structured data to the documents.
+- Writes `sitemap.xml` with the two documents and their language alternates, and `robots.txt`.
+- Checks every internal file link, and that every `href="#id"` has its `id` in the same
+  document (`href="#"` is the top).
 
 ### Adding a page
 
 1. Add the page's address to `pages` in `src/site.json`, and add it to `nav`
    if it belongs in the header.
 2. Create `src/pages/en/<key>.html` and `src/pages/lv/<key>.html`.
+3. In `site.css`, add the page to THE DOCUMENT: the keys are written out in the
+   `:target` selectors (which section shows, the header underline, the language link).
 
 `src/pages/en/404.html` is a single bilingual page. CloudFront serves it for
 missing addresses (custom error responses for 403 and 404 in `../infra/cdn.tf`).
 It is left out of the sitemap and marked `noindex`.
+
+## Checks
+
+```bash
+python3 -m unittest discover -s tests          # build tests; CI runs them
+uvx --with playwright python tools/check_pages.py --dist dist
+```
+
+`check_pages.py` serves `dist/` locally and checks it in Firefox and Chromium (Playwright's
+own browsers must be installed): which section shows for each address, the header underline
+and language link, print, that the mark's gradients paint, and that during a page change
+nothing but the page sections runs an animation or transition. `--engine firefox|chromium|both`
+and `--only NAME` narrow a run. The browser checks are not run in CI.
 
 ## Regenerating brand-derived images
 

@@ -2,3 +2,15 @@
 .repos .list { margin-top: .75rem; }
 .repos .list + .meta { margin-top: .75rem; }
 .page-head .links { margin-top: 1.5rem; }
+
+/* the featured repository (one per page) takes both content columns from 64rem: its name across, what it is and its
+   links on the left, its features on the right, so the next entry does not sit beside a long gap */
+@media (min-width: 64rem) {
+  .repos > .featured { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+                       grid-template-rows: auto auto 1fr; grid-template-areas: "name name" "text list" "meta list";
+                       column-gap: var(--gutter); align-items: baseline; }
+  .repos > .featured > h3 { grid-area: name; }
+  .repos > .featured > p:not(.meta) { grid-area: text; }
+  .repos > .featured > .list { grid-area: list; margin-top: 0; }
+  .repos > .featured > .meta { grid-area: meta; align-self: start; }
+}

@@ -1,6 +1,6 @@
 # Version 3, "Keynote": design notes
 
-Version 3 redesigns the whole site, English at `/` and Latvian at `/lv/`. Versions 1 and 2 are kept as the git tags `v1` and `v2`. This file records the principles, the decisions the owner made, the token system, the components for inner pages, and what is still open.
+Version 3 redesigns the whole site, English at `/` and Latvian at `/lv/`; each language is one document (see [The document](#the-document)). Versions 1 and 2 are kept as the git tags `v1` and `v2`. This file records the principles, the decisions the owner made, the token system, the components for inner pages, and what is still open.
 
 ## Principles
 
@@ -15,7 +15,7 @@ The design follows Steve Jobs's design principles, taken from primary sources wh
 7. **Simplicity by depth, not by hiding.** Cut decoration, never the facts a buyer needs.
 8. **The presentation is evidence.** Page weight of 150 KB or less including fonts, no cookies, no analytics, no third-party requests, no console errors.
 9. **Honest about being high-tech.** No costumes of tools: no fake terminals, pipelines or file names, and no coordinates or "est." used as decoration.
-10. **One reveal, then stillness.** The only animation on the whole site is the home reveal (below). Reduced motion gives a static, full-colour, closed mark.
+10. **One reveal, then stillness.** The only animations on the whole site are the home reveal and the .2 s fade of a page change (both below). Reduced motion gives a static, full-colour, closed mark and pages that change without a fade.
 11. **Plain words.** Concrete nouns (Kubernetes, PostgreSQL, Rust), short sentences, no hype or AI wording, no client names, no unverified numbers.
 12. **Iconic, few elements.** Navy or aluminium, the mark, Geist. Lime appears only in the logo and the mark; cyan only as a UI accent.
 13. **The whole widget.** English and Latvian, dark and light, print and the 404 page get the same care.
@@ -29,7 +29,7 @@ The design follows Steve Jobs's design principles, taken from primary sources wh
 4. On phones the Design / Build / Run word column is sized to the word "Design", not to a percentage.
 5. Inner pages (Services, Open source, Company, Privacy, 404) keep their v2 copy, in both languages. Only markup and styling changed. The Riga clock, the section index with its progress bar, the copy buttons, the repository tree ornaments, label eyebrows, figure captions, guide lines, crosshairs and coordinates are removed.
 
-Hard rules: no cookies, no analytics, no third-party requests (fonts and images are self-hosted; outbound links are fine). Contact is `info@bixority.com` only: no phone, no founders section. URLs are relative, so `dist/` also works from `file://`.
+Hard rules: no cookies, no analytics, no third-party requests (fonts and images are self-hosted; outbound links are fine). Contact is `info@bixority.com` only: no phone, no founders section. URLs are relative, so `dist/` also works from `file://`, except that the language link, which points at a folder, shows a folder listing there.
 
 ## Token system
 
@@ -48,6 +48,17 @@ All of it is in `src/assets/css/site.css`; the comment block at the top of that 
 
 The mark is two chevrons (`.part--c`, `.part--l`). Scrolling through the problem statement moves them apart and takes the colour out (a split of 46 units, brightness `--off`), then closes them and brings the colour back. It is CSS only, driven by a scroll timeline (`animation-timeline: view()`), and only runs when motion is allowed and the browser supports scroll timelines. In every other case the mark is closed and in full colour. `tools/gen_mark.py` generates the mark's markup; the 404 page shows the split, grey state without animation by wrapping the mark in `.apart`.
 
+### The document
+
+Each language is one HTML document: `/` and `/lv/`. Its pages are sections, in the order Home, Services, Open source, Company, Privacy: `<section class="pg pg--<key>">`, with `id="<key>"` on every page except Home. A page address is a fragment (`/#services`, `/lv/#company`); the sitemap lists the two documents only, and the title, description and canonical URL of a document are the home page's. There are no redirects and no per-page files.
+
+- **Which page shows.** CSS only: `.pg` is `display: none`; Home shows unless a `.pg[id]` (or something inside one) is the `:target`; each other page shows by `:root:has(#<key>:target, #<key> :target)`. A link to a sub-section (`#development`) therefore shows Services and scrolls to the sub-section. `.pg[id]` has `scroll-margin-top: 100svh`, so following a page link scrolls to the top of the document.
+- **Header.** The nav links carry `hd__link--<key>`; the open page's link has the 2 px accent underline by the same `:has` selectors (Home and Privacy have none). There is one language link per page (`hd__lang--<key>`), each to the same page in the other language; only the open page's shows.
+- **Unique ids.** Ids repeated across pages (`page-title`, `principle`) are prefixed with the page key on the pages other than Home (`services-page-title`), together with their `aria-labelledby` and `href="#…"` references. The build fails on any repeated id and on any `href="#id"` without its id in the same document.
+- **One set of mark defs.** `mark-defs.html` (gradients, filter, outlines) is placed once at the top of `<body>` in a zero-size `<svg class="mark-defs">`, positioned absolutely and never `display: none`, which browsers do not paint gradients inside.
+- **No JavaScript**, except the JSON-LD data in the head.
+- **Page change.** The arriving section fades in over .2 s (`@starting-style`, only with `prefers-reduced-motion: no-preference`); the section being left disappears at once. Nothing else moves: `check_pages.py` checks that during a change no element other than the `.pg` sections has a running animation or transition (the home reveal runs on a scroll timeline and is not counted). Print shows the open page only.
+
 ## Inner-page components
 
 Documented, with markup, at the top of `site.css`: `.page-head`, `.beat` (with `.intro`), `.parts` and `.part`, `.list`, `.facts`, `.repos`, `.prose`, `.beat--legal`, `.links`. Page-specific CSS goes in `src/assets/css/page-<name>.css` (today only `page-open-source.css`); the build bundles every stylesheet into one file. Pages stay within the existing type sizes and colour roles. The home page uses its own class names (`.stage`, `.scene`, `.work`, `.proof`, `.names`) so that the component names above stay free.
@@ -60,7 +71,7 @@ The inner pages use the home's grid. From 48rem (where the home `.cols` becomes 
 - **Parts.** Subsections are `div.part` inside `div.parts`, with generous row gaps and no rules, cards or boxes.
 - **Privacy** is a legal margin: each of the seven clauses is its own `section.beat--legal` with the H2 in column 1 and the text at a 62ch measure in columns 2-3; the "last updated" line sits at the top of columns 2-3.
 - **Compounds** that must not break at a line end (`client-side`, `6(1)(f)`, `LV-1039`, `E-pastu`) are wrapped in `.nw`.
-- **Current page.** `.hd__nav [aria-current="page"]` has a 2 px underline in `--accent` (9.2:1 on the navy, 4.9:1 on the aluminium).
+- **Current page.** The open page's `.hd__link--<key>` has a 2 px underline in `--accent` (9.2:1 on the navy, 4.9:1 on the aluminium).
 - **Print.** Inner pages print as one column at the print body size; headings keep with what follows them (`break-after: avoid` on h2, intro and h3).
 - **The object on inner pages** (`.page-head--obj`). Services, Open source and Company show the same mark, closed and lit as the home ends, with no page-specific variants. It sits in column 3 of the page head, still (`.still` switches the home reveal off), from 48rem only; phones and print leave it out. The privacy notice and the 404 keep their own heads.
 - **One statement per long page** (`.beat--say`). An existing intro is set at `--t-ask`, weight 400, in ink, over columns 2-3 on the H2's cap line: "From the first design document to maintenance years later, by the same team." (Services) and "Our clients and our own standards, nobody else." (Company), and their Latvian counterparts. On phones it stays at the lead size, in ink, because at the H2's size it read as a second heading. On paper it is the plain intro again. The owner chose this direction (B, "the object on the stage") over line diagrams and glyphs on 2026-11-07, keeping the statement and the extra air, and without the thin connecting lines of the other prototypes, which looked cheap.
@@ -82,6 +93,7 @@ Choice made for the hierarchy: the page H1 is at `--t-say` and the `.beat` H2 on
   - "Rust un Python servisi, TypeScript tīmeklim" (home; kept short so the Latvian home still prints on one page). Software services are "servisi" (owner, 2026-11-10), also "Rust servisiem" and "Python servisiem" on Services; the company's services stay "pakalpojumi";
   - "Mēs apšaubām plānu" and "problēmas vislētāk novērst, pirms kaut kas ir uzbūvēts" (Company, fourth principle).
 - **Safari was not tested** (no WebKit on the build machine). Its fail-safe path is verified: without `animation-timeline` support the mark is static and in full colour.
+- **Opened from disk** (`file://`) the language link, which points at a folder (`lv/#services`), shows a folder listing. The deployed site is not affected.
 - **Phones held sideways** (844 by 390) use the pinned stage; the page there is long and the Latvian H1 is 1.27 times the statement size, just under the 1.3 aim.
 - **The Latvian mark** is about a quarter smaller than the English one on landscape screens (the cost of the 2 : 1 split that keeps each H1 sentence on one line).
 

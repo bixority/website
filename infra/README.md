@@ -19,7 +19,7 @@ of the repository (`v1`, `v2`, `v3` or `v4`; the default is `v4`), for example
 `terraform -chdir=infra apply -var site_version=v4`. The host name comes from `base_url` in that
 version's `src/site.json`.
 
-**Caching.** `site.<hash>.css` and `site.<hash>.js` are kept for a year, because
+**Caching.** `site.<hash>.css` (and `site.<hash>.js` in v1 and v2) is kept for a year, because
 a new version gets a new name. Fonts and images are kept for a week. Pages,
 the sitemap and robots.txt are checked by browsers on every visit, and
 CloudFront keeps them for a day. Every apply that changes a file clears
@@ -27,7 +27,7 @@ CloudFront's copies (an `aws_cloudfront_create_invalidation` action), so the
 new version is live as soon as the apply finishes.
 
 **Addresses.** The function in `functions/viewer-request.js` serves
-`/services/` from `services/index.html`, redirects `/services` to `/services/`,
+a folder address such as `/lv/` (or `/services/` in v1 and v2) from its `index.html`, redirects `/services` to `/services/`,
 and redirects any other host name (such as the distribution's own
 `*.cloudfront.net` name) to www. A missing page gets `404.html` with status 404.
 
