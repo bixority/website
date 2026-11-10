@@ -484,7 +484,9 @@ address { font-style: normal; }
 :root:has(#privacy:target, #privacy :target) { --n: 4; --pn: 1; }
 :root {
   --cur: var(--n); --old: var(--n);
-  --t: calc(var(--ready) * (var(--cur) - var(--old)) / (var(--n) - var(--old) + .0001));
+  /* clamped: a second change while one runs can leave --cur outside old..n (back to the old page, or on to one
+     nearer); unclamped, the quotient then grows without bound and the marks spin thousands of turns */
+  --t: clamp(0, var(--ready) * (var(--cur) - var(--old)) / (var(--n) - var(--old) + .0001), 1);
   --m: clamp(0, min(var(--t), 1 - var(--t)) * 10000, 1);
   --po: clamp(0, 1 - abs(var(--old) - 4), 1); /* 1 while the page being left is Privacy (no mark) */
 }

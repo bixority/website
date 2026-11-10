@@ -226,7 +226,7 @@ SAMPLE_JS = """() => {
 
 def progress(s: dict) -> float:
     """--t as the stylesheet computes it."""
-    return s["ready"] * (s["cur"] - s["old"]) / (s["n"] - s["old"] + 0.0001)
+    return min(max(s["ready"] * (s["cur"] - s["old"]) / (s["n"] - s["old"] + 0.0001), 0), 1)
 
 # Do an action in the page, then take a snapshot at each of the given times (ms after the action), timed in the page.
 RUN_JS = """async ([action, times, sample]) => {
@@ -482,6 +482,62 @@ def check_double_click(page: Page, base: str) -> list[str]:
     page_mk = page.evaluate("(() => { const b = document.querySelector('.mk').getBoundingClientRect(); return [b.x, b.y, b.width, b.height]; })()")
     if s["own_rect"] and not close(page_mk, s["own_rect"]):
         bad.append(f".mk box {fmt(page_mk)} is not at the Company mark {fmt(s['own_rect'])}")
+    return bad
+
+
+# A second change while one runs (a click, or Back): no mark spins out of control. The sampler reads the lime chevron
+# of every visible mark each frame and counts the frames in which a matrix value moves by more than .9 per 16.7 ms (a
+# frame at 60 Hz, timed by the frame's own timestamp, so a late frame does not count); a turn over --spin moves none
+# by more than about .4. CSS cannot carry the angle of a turn that is cut short over to the next
+# change, so each interrupting change may snap once; an unbounded progress jumps in nearly every frame.
+STEADY_JS = """async ([steps, ms]) => {
+  const t0 = performance.now(); let i = 0, prev = null, last = null, frame = t0, worst = 0, at = 0, jumps = 0;
+  // each visible mark by name (the travelling one, or the page it belongs to): a page that gives way to another is
+  // a different mark, not a jump
+  const vals = () => Object.fromEntries([...document.querySelectorAll('.mark')].filter(m => m.checkVisibility()).map(m => {
+    const t = getComputedStyle(m.querySelector('.mark__chev--l')).transform;
+    const name = m.closest('.mk') ? 'mk' : [...m.closest('.pg').classList].find(c => c.startsWith('pg--'));
+    return [name, t === 'none' ? null : t.slice(t.indexOf('(') + 1, -1).split(',').map(Number)]; }));
+  while (performance.now() - t0 < ms) {
+    const now = performance.now() - t0;
+    while (i < steps.length && now >= steps[i][0]) {
+      const a = steps[i++][1];
+      if (a === 'back') history.back(); else document.querySelector(a).click();
+    }
+    const cur = vals();
+    let step = 0;
+    if (prev) for (const [k, v] of Object.entries(cur)) if (v && prev[k]) v.forEach((x, j) => {
+      step = Math.max(step, Math.abs(x - prev[k][j])); });
+    if (last !== null) step *= 16.7 / Math.max(frame - last, 16.7);
+    last = frame;
+    if (step > .9) jumps++;
+    if (step > worst) { worst = step; at = Math.round(now); }
+    prev = cur;
+    frame = await new Promise(r => requestAnimationFrame(r));
+  }
+  return [worst, at, jumps];
+}"""
+
+
+@check("second_change_mid_turn", DESKTOP, TABLET, PHONE)
+def check_second_change_mid_turn(page: Page, base: str) -> list[str]:
+    bad = []
+    cases = {
+        "Company, then Home at 500 ms": [[0, ".hd__link--company"], [500, CLICK_HOME]],
+        "Services, then Back at 300 ms": [[0, ".hd__link--services"], [300, "back"]],
+        "Services and Home in turn every 150 ms": [[0, ".hd__link--services"], [150, CLICK_HOME],
+                                                   [300, ".hd__link--services"], [450, CLICK_HOME]],
+        "Services, then Company at 200 ms": [[0, ".hd__link--services"], [200, ".hd__link--company"]],
+    }
+    for label, steps in cases.items():
+        open_settled(page, f"{base}/")
+        worst, at, jumps = page.evaluate(STEADY_JS, [steps, 1600])
+        if jumps > len(steps) - 1:
+            bad.append(f"{label}: {jumps} frames with a jump over .9, at most {len(steps) - 1} allowed "
+                       f"(largest {worst:.2f} at {at} ms)")
+        s = snapshot(page)
+        if s["cur"] != s["old"]:
+            bad.append(f"{label}: after 1.6 s --cur {s['cur']} --old {s['old']}, expected equal")
     return bad
 
 
