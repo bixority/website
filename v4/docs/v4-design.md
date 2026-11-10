@@ -96,13 +96,13 @@ Choice made for the hierarchy: the page H1 is at `--t-say` and the `.beat` H2 on
 
 - **Latvian copy for a native speaker.** The home copy is approved, but these phrases should be read by a native speaker:
   - "katra problēma ir kāda cita atbildībā" (from approved v2 wording);
-  - "Jo kvalitātei ir nozīme: pēc šā principa mūsu dibinātājs ir strādājis visu karjeru.";
+  - "Jo kvalitātei ir nozīme: tā mēs strādājam.";
   - "Sistēmas, kas veidotas, lai atkoptos.";
   - "Reģ. Nr." and "PVN Nr." in the footer;
   - "Atvērts pēc noklusējuma." reads like a software-settings phrase;
   - "Katra izmaiņa tiek testēta un pārskatīta": "izmaiņa" is singular, "izmaiņas" is the usual plural form;
   - "laidienu inženierija" is a rare term for release engineering;
-  - "Kam mēs esam atbildīgi" (Company): the section text calls the company "tās dibinātājam" (feminine, as for "sabiedrība") and then "uzņēmumam ... tas" (masculine); check that the mix reads naturally;
+  - "Kam mēs esam atbildīgi" (Company): "Bixority pieder vienam īpašniekam. Uzņēmumam nav investoru ..."; check that it reads naturally;
   - "Rust un Python servisi, TypeScript tīmeklim" (home; kept short so the Latvian home still prints on one page). Software services are "servisi" (owner, 2026-11-10), also "Rust servisiem" and "Python servisiem" on Services; the company's services stay "pakalpojumi";
   - "Mēs apšaubām plānu" and "problēmas vislētāk novērst, pirms kaut kas ir uzbūvēts" (Company, fourth principle).
 - **Safari was not tested** (no WebKit on the build machine). Its fail-safe path is verified: without `animation-timeline` support the mark is static and in full colour. The page change (registered properties, `:has()`, `@starting-style`, 3D transforms) is checked in Firefox and Chromium only; Safari is untested.

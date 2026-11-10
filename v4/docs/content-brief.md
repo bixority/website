@@ -33,9 +33,10 @@ Readers:
 **Core message: full-cycle ownership.** One small, senior team designs, builds
 and runs the system, and stays accountable for it in production.
 
-**Slogan: "Because quality matters."** This is the founder's lifelong
-principle, and it applies to every layer of IT: code, infrastructure,
-operations and communication. It is the site's through-line, not decoration.
+**Slogan: "Because quality matters."** This is the principle the company
+works by, and it applies to every layer of IT: code, infrastructure,
+operations and communication. It is the site's through-line, not decoration. The copy speaks as "we" and
+does not mention a founder (owner, 2026-11-11).
 
 Pillars, taken from the interview:
 
