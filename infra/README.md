@@ -48,7 +48,8 @@ Permissions-Policy. No access logs are written.
 
 ## Requirements
 
-- Terraform 1.17 or newer, and Python 3.10 or newer for the build.
+- Terraform 1.17 or newer, and [uv](https://docs.astral.sh/uv/) for the build. Terraform runs the build
+  through `uv`, so it must be on the PATH of the machine that runs `terraform plan`.
 - The AWS profile `bx`, with the permissions in `deployer-policy.json.tftpl`
   (S3 on the two buckets, CloudFront, and ACM in us-east-1). The template takes
   the account ID; after the bootstrap apply,
@@ -70,7 +71,7 @@ Permissions-Policy. No access logs are written.
 
 The workflow `.github/workflows/ci.yaml` has three jobs.
 
-- **check** runs on pull requests, pushes to `main` and manual runs. It builds `v4`
+- **check** runs on pull requests, pushes to `main` and manual runs. It installs uv (`astral-sh/setup-uv`), builds `v4`
   with `--strict`, runs its unit tests, runs `node --test 'infra/functions/*.test.mjs'`, checks
   `terraform fmt`, and runs `terraform init -backend=false -lockfile=readonly`
   and `terraform validate` in `infra/` and `infra/bootstrap/`. It needs no secrets.
@@ -83,6 +84,7 @@ The workflow `.github/workflows/ci.yaml` has three jobs.
   OIDC token for the deploy role. A manual run on another branch is skipped too: the
   AWS role does not trust that branch. A Dependabot change is planned on `main` after it is
   merged, before the apply is approved. The plan file is not uploaded anywhere.
+  The plan builds the site, so this job installs uv too (`astral-sh/setup-uv`); the apply job does the same.
 - **apply** runs only on `main` (a push, or a manual run of the workflow on
   `main`), after `plan`, and only once the owner approves it in the GitHub
   environment `production`. It plans again, shows the plan, and applies that
@@ -240,7 +242,7 @@ terraform -chdir=infra apply
 ```
 
 The plan rebuilds the site and lists exactly which files will be uploaded,
-changed or deleted. Run `python3 v4/build.py --strict` first if you only want to
+changed or deleted. Run `uv run v4/build.py --strict` first if you only want to
 check the build.
 
 ## Tests

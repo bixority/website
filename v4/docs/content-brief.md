@@ -49,7 +49,7 @@ Pillars, taken from the interview:
 Home page hero (draft, English):
 
 > **H1:** Software and infrastructure, designed, built and run by one team.
-> **Sub:** Bixority has been an engineering company in Riga since 2010, working
+> **Sub:** Bixority has been an IT services company in Riga since 2010, working
 > across DevOps, SRE and software development. Because quality matters.
 
 Alternative H1s:

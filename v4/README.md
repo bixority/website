@@ -12,14 +12,17 @@ version 2 is in [docs/v2-research.md](docs/v2-research.md).
 ## Build and preview
 
 ```bash
-python3 build.py                 # writes dist/
-python3 build.py --strict        # also fails on broken internal links
-python3 build.py --out /tmp/site # write somewhere other than dist/ (for parallel builds)
+uv run build.py                  # writes dist/, HTML and CSS minified
+uv run build.py --strict         # also fails on broken internal links
+uv run build.py --no-minify      # readable HTML and CSS, for debugging
+uv run build.py --out /tmp/site  # write somewhere other than dist/ (for parallel builds)
 python3 -m http.server 8765 --directory dist   # preview at http://127.0.0.1:8765/
 ```
 
-Python 3.10 or newer; no packages to install. `dist/` is generated output and
-is not committed.
+The build needs [uv](https://docs.astral.sh/uv/). It reads the dependency
+(`minify-html`, pinned) and the Python range (3.10 to 3.14) from the header of `build.py`.
+Only the output is minified; `src/` stays readable. The checks on links and ids run on
+the readable HTML, before it is minified. `dist/` is generated output and is not committed.
 
 The output is two documents, `dist/index.html` (English) and `dist/lv/index.html`
 (Latvian), plus `404.html`, `sitemap.xml`, `robots.txt`, `assets/` and `favicon.ico`.
@@ -94,7 +97,7 @@ It is left out of the sitemap and marked `noindex`.
 ## Checks
 
 ```bash
-python3 -m unittest discover -s tests          # build tests; CI runs them
+uv run --python ">=3.10,<3.15" --with-requirements build.py python -m unittest discover -s tests   # build tests; CI runs them
 uvx --with playwright python tools/check_pages.py --dist dist
 ```
 

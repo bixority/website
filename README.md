@@ -11,12 +11,12 @@ site with its own build script, sources, brand files and notes.
 ## Build and preview
 
 ```bash
-python3 v4/build.py --strict                    # writes v4/dist/
+uv run v4/build.py --strict                      # writes v4/dist/, minified
 python3 -m http.server 8765 --directory v4/dist # preview at http://127.0.0.1:8765/
 ```
 
-The site is one document per language (`/` and `/lv/`); its pages are `#` sections of it. Python 3.10 or newer; no
-packages to install. `v4/README.md` explains its layout, and `v4/docs/` holds the content brief and the design notes.
+The site is one document per language (`/` and `/lv/`); its pages are `#` sections of it. The build needs [uv](https://docs.astral.sh/uv/),
+which installs its one dependency (`minify-html`). The output is minified; `--no-minify` gives readable HTML and CSS. `v4/README.md` explains its layout, and `v4/docs/` holds the content brief and the design notes.
 
 GitHub Actions (`.github/workflows/ci.yaml`) builds the site, runs its unit tests, tests the CloudFront function and
 plans the Terraform changes. Applying them needs the

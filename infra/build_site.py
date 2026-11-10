@@ -2,13 +2,15 @@
 """Build one version of the site for Terraform's external data source (site.tf).
 
 Reads the query {"site": "<version folder>"} from stdin, runs <version>/build.py
---strict and prints {"dist": "<absolute path>"} on stdout, as the external data
+--strict with `uv run --script` (uv installs the build's one dependency, so uv must be
+on the PATH) and prints {"dist": "<absolute path>"} on stdout, as the external data
 source expects. The build's own output goes to stderr, which Terraform shows only
 when the build fails.
 """
 
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -23,8 +25,12 @@ def main() -> int:
     if not re.fullmatch(r"v[0-9]+", site) or not (root / "build.py").is_file():
         print(f"build_site.py: no site version folder {site!r} with a build.py in {REPO}", file=sys.stderr)
         return 1
+    uv = shutil.which("uv")
+    if uv is None:
+        print("build_site.py: uv is not installed; the build needs it (https://docs.astral.sh/uv/)", file=sys.stderr)
+        return 1
     result = subprocess.run(
-        [sys.executable, str(root / "build.py"), "--strict"],
+        [uv, "run", "--script", str(root / "build.py"), "--strict"],
         cwd=root,
         stdout=sys.stderr,
         check=False,

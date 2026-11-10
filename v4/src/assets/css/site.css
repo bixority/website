@@ -20,9 +20,10 @@
    Each section sits in <div|section class="... wrap">, which gives the left grid. Sections are separated by
    space, never by rules, cards or boxes. The first element on a page is .page-head.
 
-   .page-head  the page's one H1 (at --t-say) and a lead line (--t-lead, quiet).
+   .page-head  the page's title (at --t-say) and a lead line (--t-lead, quiet). The title is an H2: the document has
+               one H1, the home claim (the error page, a document of its own, keeps an H1).
        <section class="page-head wrap" aria-labelledby="page-title">
-         <h1 id="page-title">Services</h1>
+         <h2 id="page-title">Services</h2>
          <p class="lead">One sentence of 34 characters or more per line is fine; it wraps at 34ch.</p>
        </section>
 
@@ -117,7 +118,7 @@
            by, and print leaves it out. Always wrap the figure in .still, which switches the home reveal off for it.
            The privacy notice keeps the plain .page-head.
        <section class="page-head page-head--obj wrap" aria-labelledby="page-title">
-         <div class="page-head__text"><h1 id="page-title">Services</h1><p class="lead">...</p></div>
+         <div class="page-head__text"><h2 id="page-title">Services</h2><p class="lead">...</p></div>
          <div class="page-head__obj still" aria-hidden="true">{{ partial_mark }}</div>
        </section>
 
@@ -385,7 +386,7 @@ address { font-style: normal; }
 
 /* ===== inner pages: the home's three columns, the same voices ===== */
 .page-head { padding-block: clamp(2.5rem, 9vh, 5.5rem) clamp(1rem, 3vh, 2rem); }
-.page-head h1 { font-size: var(--t-say); font-weight: 600; line-height: 1.06; letter-spacing: -.03em; }
+.page-head :is(h1, h2) { font-size: var(--t-say); font-weight: 600; line-height: 1.06; letter-spacing: -.03em; }
 .page-head .lead { margin-top: 1.5rem; }
 .page-head--mark { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); column-gap: var(--gutter); align-items: center; }
 .page-head__fig { display: grid; place-items: center; }
@@ -644,7 +645,7 @@ address { font-style: normal; }
 
 /* large statements sit on their cap height and baseline (progressive enhancement) */
 @supports (text-box: trim-both cap alphabetic) {
-  h1, .say, .col h3, .ft__ask, .page-head h1 { text-box: trim-both cap alphabetic; }
+  h1, .say, .col h3, .ft__ask, .page-head :is(h1, h2) { text-box: trim-both cap alphabetic; }
   /* trimmed so the spacing under the H2 and the part names is measured from the letters */
   .beat > h2, .part h3, .repos h3 { text-box: trim-both cap alphabetic; }
   .beat.beat--legal > h2 { text-box: normal; }
@@ -747,7 +748,7 @@ address { font-style: normal; }
   .page-head__fig { display: none; }
   .page-head--mark { display: block; }
   .page-head { padding-block: 0 8pt; }
-  .page-head h1 { font-size: 24pt; }
+  .page-head :is(h1, h2) { font-size: 24pt; }
   .page-head .lead { margin-top: 8pt; }
   .beat { display: block; padding-block: 8pt; container-type: normal; }
   .beat > h2 { font-size: 14pt; margin-bottom: 6pt; max-width: none; }

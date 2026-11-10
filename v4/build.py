@@ -1,9 +1,14 @@
-#!/usr/bin/env python3
-"""Build the static site from src/ into dist/. Standard library only.
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10,<3.15"
+# dependencies = ["minify-html==0.18.1"]
+# ///
+"""Build the static site from src/ into dist/. One dependency: minify-html (uv installs it).
 
-    python3 build.py                   # build, warn about links to pages that don't exist yet
-    python3 build.py --strict          # build, fail on any broken internal link
-    python3 build.py --out /tmp/site   # write somewhere else than dist/ (parallel builds)
+    uv run build.py                    # build, minify HTML and CSS, warn about links to pages that don't exist yet
+    uv run build.py --strict           # build, fail on any broken internal link
+    uv run build.py --no-minify        # readable HTML and CSS, for debugging
+    uv run build.py --out /tmp/site    # write somewhere else than dist/ (parallel builds)
 """
 import argparse
 import hashlib
@@ -12,8 +17,10 @@ import json
 import posixpath
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 ROOT = Path(__file__).resolve().parent
 BUILD_MARKER = ".bixority-build"
@@ -24,7 +31,7 @@ RAW = {"alternates", "nav", "lang_switch", "content", "jsonld", "robots", "canon
 RAW_PREFIXES = ("partial_",)
 
 
-def fail(msg):
+def fail(msg) -> NoReturn:
     sys.exit(f"build: {msg}")
 
 
@@ -80,7 +87,28 @@ def fingerprinted(data, stem, suffix):
     return f"{stem}.{digest}{suffix}"
 
 
-def build_assets(dist):
+def load_minifier():
+    try:
+        import minify_html
+    except ImportError:
+        fail("minify-html is not installed; run `uv run build.py` (or pass --no-minify)")
+    return minify_html
+
+
+def minify_css(css, minify_html):
+    wrapped = minify_html.minify(f"<style>{css}</style>", minify_css=True)
+    if not (wrapped.startswith("<style>") and wrapped.endswith("</style>")):
+        fail("minify-html changed the shape of the CSS wrapper")
+    return wrapped[len("<style>"):-len("</style>")]
+
+
+def minify_page(page_html, minify_html):
+    # The doctype, closing tags and <html>/<head> stay; JS is left alone (JSON-LD is JSON).
+    return minify_html.minify(page_html, minify_css=True, minify_js=False,
+                              keep_closing_tags=True, keep_html_and_head_opening_tags=True)
+
+
+def build_assets(dist, minifier=None):
     """Copy static assets; bundle and fingerprint the CSS. Returns its URL."""
     assets = dist / "assets"
     shutil.copytree(SRC / "assets" / "img", assets / "img")
@@ -96,22 +124,35 @@ def build_assets(dist):
     # fonts, then site.css, then every other stylesheet in sorted name order (page-<name>.css)
     sheets = [SRC / "assets" / "css" / "site.css"]
     sheets += sorted(p for p in (SRC / "assets" / "css").glob("*.css") if p.name != "site.css")
-    css = "\n".join([font_css, *(p.read_text(encoding="utf-8") for p in sheets)]).encode()
+    css = "\n".join([font_css, *(p.read_text(encoding="utf-8") for p in sheets)])
+    if minifier:
+        css = minify_css(css, minifier)  # before the hash: the name is of the bytes served
+    css = css.encode()
     css_name = fingerprinted(css, "site", ".css")
     (assets / css_name).write_bytes(css)
 
     return f"/assets/{css_name}"
 
 
-def org_jsonld(site):
+# What the company works with, for search engines (schema.org knowsAbout): the Services page's own terms.
+KNOWS_ABOUT = ["DevOps", "Site reliability engineering", "Kubernetes", "Infrastructure as code", "CI/CD",
+               "Observability", "PostgreSQL", "Rust", "Python", "TypeScript", "Software development"]
+
+
+def org_jsonld(site, lang, description, here):
+    """The company (an Organization that is also a ProfessionalService) and this language's website."""
     c, base = site["company"], site["base_url"]
-    data = {
-        "@context": "https://schema.org",
-        "@type": "Organization",
+    org_id = base + "/#organization"
+    logo = base + "/assets/img/mark-512.png"
+    org = {
+        "@type": ["Organization", "ProfessionalService"],
+        "@id": org_id,
         "name": site["brand"],
         "legalName": c["legal_name"],
+        "description": description,
         "url": base + "/",
-        "logo": base + "/assets/img/mark-512.png",
+        "logo": logo,
+        "image": logo,
         "email": site["email"],
         "foundingDate": site["founded"],
         "vatID": c["vat"],
@@ -123,16 +164,44 @@ def org_jsonld(site):
             "postalCode": c["postal"],
             "addressCountry": c["country_code"],
         },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": site["email"],
+            "availableLanguage": ["English", "Latvian"],
+        },
+        "knowsAbout": KNOWS_ABOUT,
         "sameAs": site["profiles"],
     }
+    website = {
+        "@type": "WebSite",
+        "@id": base + here + "#website",
+        "url": base + here,
+        "name": site["brand"],
+        "inLanguage": lang["code"],
+        "publisher": {"@id": org_id},
+    }
+    data = {"@context": "https://schema.org", "@graph": [org, website]}
     body = json.dumps(data, ensure_ascii=False, indent=2).replace("</", "<\\/")
     return f'  <script type="application/ld+json">\n{body}\n  </script>'
+
+
+def last_changed():
+    """The date (YYYY-MM-DD) of the last commit that changed the site's sources, for the sitemap's lastmod.
+    None outside a git checkout, or when git is missing; then the sitemap has no lastmod."""
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs", "--", "src", "build.py"], cwd=ROOT,
+                             capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return out if re.fullmatch(r"\d{4}-\d{2}-\d{2}", out) else None
 
 
 def parse_args(argv):
     ap = argparse.ArgumentParser(description="Build the static site from src/.")
     ap.add_argument("--strict", action="store_true", help="fail on any broken internal link")
     ap.add_argument("--out", type=Path, default=ROOT / "dist", metavar="DIR", help="output directory (default: dist/)")
+    ap.add_argument("--no-minify", action="store_true", help="keep the HTML and CSS readable")
     return ap.parse_args(argv)
 
 
@@ -158,11 +227,12 @@ def main(argv=None):
             fail(f"refusing to overwrite {dist}: it is not empty and is not a previous build (no {BUILD_MARKER})")
         shutil.rmtree(dist)
     dist.mkdir(parents=True)
+    minifier = None if args.no_minify else load_minifier()
     if dist != ROOT / "dist":
         # dist/ is always ours to replace; other outputs carry a marker, and dist/ is
         # what gets deployed, so the marker never ships with the site
         (dist / BUILD_MARKER).write_text("Output of build.py; it may be deleted and rebuilt.\n", encoding="utf-8")
-    css_url = build_assets(dist)
+    css_url = build_assets(dist, minifier)
 
     def url_of(lang, key):
         if key == "404":
@@ -224,10 +294,13 @@ def main(argv=None):
             ctx["partial_" + name] = render(text, ctx, f"partials/{name}.html")
         return ctx
 
+    def cls(item):
+        return f' class="hd__link hd__link--{item}"'
+
     def nav_html(lang, link, doc):
         t = strings[lang["code"]]
         return "\n".join(
-            f'      <li><a{f" class=\"hd__link hd__link--{item}\"" if doc else ""} href="{link(item)}">'
+            f'      <li><a{cls(item) if doc else ""} href="{link(item)}">'
             f'{html.escape(t["nav"][item])}</a></li>' for item in site["nav"])
 
     def switch_html(lang, keys, doc):
@@ -278,7 +351,7 @@ def main(argv=None):
         ctx.update({
             "canonical_link": f'  <link rel="canonical" href="{base}{here}">',
             "alternates": "\n".join(alternates),
-            "jsonld": org_jsonld(site),
+            "jsonld": org_jsonld(site, lang, home_meta["description"], here),
             "nav": nav_html(lang, link, True),
             "lang_switch": switch_html(lang, keys, True),
             # the travelling mark of the page change: one more copy of the mark, first in <main>
@@ -317,13 +390,17 @@ def main(argv=None):
             write(dist / here404.lstrip("/"), out)
             written.append(here404.lstrip("/"))
 
-    write_sitemap(dist, base, sitemap)
+    write_sitemap(dist, base, sitemap, last_changed())
     (dist / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}/sitemap.xml\n", encoding="utf-8")
     problems = check_links(dist) + check_fragments(dist)
     for page, link in problems:
         print(f"{'error' if strict else 'warning'}: {page} links to missing {link}", file=sys.stderr)
     if strict and problems:
         sys.exit(1)
+    if minifier:
+        # last, so the checks above ran on the readable HTML
+        for page in dist.rglob("*.html"):
+            write(page, minify_page(page.read_text(encoding="utf-8"), minifier))
     shown = dist.relative_to(ROOT) if dist.is_relative_to(ROOT) else dist
     docs = sum(1 for w in written if w.endswith("index.html"))
     print(f"build: {docs} documents and {len(written) - docs} error page written to {shown}/")
@@ -359,11 +436,13 @@ def prefix_ids(key, page_html, shared):
     return re.sub(r'href="#([^"]+)"', lambda m: f'href="#{one(m.group(1))}"', page_html)
 
 
-def write_sitemap(dist, base, entries):
+def write_sitemap(dist, base, entries, lastmod=None):
     lines = ['<?xml version="1.0" encoding="UTF-8"?>',
              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">']
     for here, alts in entries:
         lines.append(f"  <url>\n    <loc>{base}{here}</loc>")
+        if lastmod:
+            lines.append(f"    <lastmod>{lastmod}</lastmod>")
         for code, url in alts:
             lines.append(f'    <xhtml:link rel="alternate" hreflang="{code}" href="{base}{url}"/>')
         lines.append("  </url>")
